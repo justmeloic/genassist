@@ -1,23 +1,35 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { FileText } from "lucide-react"
-import { useState } from "react"
+import type * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FileText, Home } from "lucide-react";
+import { useState } from "react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  isCollapsed: boolean
-  onToggle: () => void
+  isCollapsed: boolean;
+  onToggle: () => void;
 }
 
 export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
-  const pathname = usePathname()
-  const [isHovered, setIsHovered] = useState(false)
+  const pathname = usePathname();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const homeLink = {
+    title: "Home",
+    icon: Home,
+    variant: "default",
+    href: "/",
+  };
 
   const sidebarLinks = [
     {
@@ -26,24 +38,62 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       variant: "default",
       href: "/editor",
     },
-  ] as const
+  ] as const;
+
+  const renderLink = (link: typeof homeLink, index?: number) => {
+    const Icon = link.icon;
+    return isCollapsed && !isHovered ? (
+      <Tooltip key={index} delayDuration={0}>
+        <TooltipTrigger asChild>
+          <Link
+            href={link.href}
+            className={cn(
+              "flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50",
+              pathname === link.href &&
+                "bg-[#d3e2fd] dark:bg-blue-900/50 text-primary hover:bg-[#d3e2fd]/90 dark:hover:bg-blue-900/70"
+            )}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="sr-only">{link.title}</span>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right" className="flex items-center gap-4">
+          {link.title}
+        </TooltipContent>
+      </Tooltip>
+    ) : (
+      <Link
+        key={index}
+        href={link.href}
+        className={cn(
+          "flex items-center gap-3 rounded-2xl px-3 py-2 text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50",
+          pathname === link.href &&
+            "bg-[#d3e2fd] dark:bg-blue-900/50 text-primary hover:bg-[#d3e2fd]/90 dark:hover:bg-blue-900/70"
+        )}
+      >
+        <Icon className="h-5 w-5" />
+        {link.title}
+      </Link>
+    );
+  };
 
   return (
     <div
       className={cn(
         "relative flex h-screen flex-col gap-4 px-3 pb-3 pt-16 transition-all duration-300 bg-[#f0f4f8] dark:bg-gray-900 shadow-[2px_0_10px_0_rgba(0,0,0,0.1)] z-10 rounded-tr-xl rounded-br-xl border-r border-gray-200 dark:border-gray-700",
         isCollapsed && !isHovered ? "w-[80px]" : "w-[250px]",
-        className,
+        className
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <TooltipProvider>
+        {/* Toggle Button */}
         <Button
           variant="ghost"
           className={cn(
             "absolute top-4 p-2 hover:bg-white/50 dark:hover:bg-gray-800/50",
-            isCollapsed && !isHovered ? "left-1/2 -translate-x-1/2" : "left-4",
+            isCollapsed && !isHovered ? "left-1/2 -translate-x-1/2" : "left-4"
           )}
           onClick={onToggle}
         >
@@ -55,48 +105,20 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
           <span className="sr-only">Toggle Sidebar</span>
         </Button>
 
-        {/* Title */}
-        <div className="mb-2 mt-[60px] font-semibold text-gray-700 dark:text-gray-300 text-sm">Tools</div>
+        {/* Home Link */}
+        <div className="mb-4 mt-[60px]">{renderLink(homeLink)}</div>
 
+        {/* Tools Section */}
+        <div className={cn(
+          "mb-2 font-semibold text-gray-700 dark:text-gray-300 text-sm",
+          isCollapsed && !isHovered ? "text-center" : ""
+        )}>
+          Tools
+        </div>
         <nav className="grid gap-1">
-          {sidebarLinks.map((link, index) => {
-            const Icon = link.icon
-            return isCollapsed && !isHovered ? (
-              <Tooltip key={index} delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={link.href}
-                    className={cn(
-                      "flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50",
-                      pathname === link.href &&
-                        "bg-[#d3e2fd] dark:bg-blue-900/50 text-primary hover:bg-[#d3e2fd]/90 dark:hover:bg-blue-900/70",
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span className="sr-only">{link.title}</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="flex items-center gap-4">
-                  {link.title}
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <Link
-                key={index}
-                href={link.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-2xl px-3 py-2 text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50",
-                  pathname === link.href &&
-                    "bg-[#d3e2fd] dark:bg-blue-900/50 text-primary hover:bg-[#d3e2fd]/90 dark:hover:bg-blue-900/70",
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                {link.title}
-              </Link>
-            )
-          })}
+          {sidebarLinks.map((link, index) => renderLink(link, index))}
         </nav>
       </TooltipProvider>
     </div>
-  )
+  );
 }

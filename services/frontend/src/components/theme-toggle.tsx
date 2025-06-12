@@ -1,38 +1,42 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useTheme } from "next-themes"
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   // Avoid hydration mismatch by only rendering after mount
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
     return (
       <div className="hidden lg:flex items-center space-x-3">
-        <span className="text-sm font-medium text-muted-foreground">Light Mode</span>
+        <span className="text-xs opacity-65 font-medium text-muted-foreground">
+          Light Mode
+        </span>
         <div className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200">
           <div className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform" />
         </div>
       </div>
-    )
+    );
   }
 
-  const isDark = theme === "dark"
+  const isDark = theme === "dark";
 
   return (
     <>
       {/* Large screen toggle */}
       <div className="hidden lg:flex items-center space-x-3">
-        <span className="text-sm font-medium text-muted-foreground">{isDark ? "Dark Mode" : "Light Mode"}</span>
+        <span className="text-xs opacity-65 font-medium text-muted-foreground">
+          {isDark ? "Dark Mode" : "Light Mode"}
+        </span>
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
             isDark ? "bg-blue-600" : "bg-gray-200"
           }`}
           aria-label="Toggle theme"
@@ -52,7 +56,12 @@ export function ThemeToggle() {
         aria-label="Toggle theme"
       >
         {isDark ? (
-          <svg className="h-5 w-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-5 w-5 text-yellow-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -61,7 +70,12 @@ export function ThemeToggle() {
             />
           </svg>
         ) : (
-          <svg className="h-5 w-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="h-5 w-5 text-blue-700"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -73,5 +87,5 @@ export function ThemeToggle() {
         <span className="sr-only">Toggle theme</span>
       </button>
     </>
-  )
+  );
 }
