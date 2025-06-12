@@ -6,6 +6,7 @@ import Editor from "@/components/Editor";
 import DiffViewer from "@/components/DiffViewer";
 import LlmPrompt from "@/components/LlmPrompt";
 import AudioGenerator from "@/components/AudioGenerator";
+import { editDocument } from "@/lib/api";
 
 export default function DocumentEditor() {
   const [originalContent, setOriginalContent] = useState(
@@ -46,29 +47,22 @@ export default function DocumentEditor() {
   const handleLlmSuggestion = async (prompt: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt,
-          content: originalContent,
-        }),
+      const response = await editDocument({
+        content: originalContent,
+        instructions: prompt,
+        document_type: "general",
       });
 
-      if (!response.ok) {
+      if (response.status === "success") {
+        const aiSuggestion = response.edited_content;
+        setProposedContent(aiSuggestion);
+        const diff = diffChars(originalContent, aiSuggestion);
+        setDiffResult(diff);
+        setShowDiff(true);
+        setEditMode("llm");
+      } else {
         throw new Error("Failed to get AI suggestion");
       }
-
-      const data = await response.json();
-      const aiSuggestion = data.text;
-
-      setProposedContent(aiSuggestion);
-      const diff = diffChars(originalContent, aiSuggestion);
-      setDiffResult(diff);
-      setShowDiff(true);
-      setEditMode("llm");
     } catch (error) {
       console.error("Error getting AI suggestion:", error);
       alert("Failed to get AI suggestion. Please try again.");

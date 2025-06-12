@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { TextToSpeechResponse } from "@/lib/api";
 import { X, Download, Play, Pause, Headphones, Loader2 } from "lucide-react";
+import { generateSpeech, getAudioUrl } from "@/lib/api";
 
 interface AudioGeneratorProps {
   content: string;
@@ -18,54 +20,94 @@ export default function AudioGenerator({
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [audioResponse, setAudioResponse] =
+    useState<TextToSpeechResponse | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Simulate audio generation
+  // Generate audio when component mounts
   useEffect(() => {
-    const timer = setTimeout(() => {
-      // For demo purposes, create a mock audio URL
-      // In real implementation, this would be the actual generated audio file
-      setAudioUrl("/placeholder-audio.mp3"); // This would be replaced with actual audio URL
-      setIsLoading(false);
-    }, 3000); // Simulate 3 seconds of processing
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handlePlayPause = () => {
-    // In real implementation, this would control actual audio playback
-    setIsPlaying(!isPlaying);
-
-    // Simulate audio progress for demo
-    if (!isPlaying) {
-      const interval = setInterval(() => {
-        setCurrentTime((prev) => {
-          if (prev >= 100) {
-            setIsPlaying(false);
-            clearInterval(interval);
-            return 0;
-          }
-          return prev + 1;
+    const generateAudio = async () => {
+      try {
+        const response = await generateSpeech({
+          text: content,
+          voice_name: "Kore",
+          speed: "normal",
+          pitch: "normal",
         });
-        setProgress((prev) => Math.min(prev + 1, 100));
-      }, 100);
+
+        setAudioResponse(response);
+        setAudioUrl(getAudioUrl(response.audio_file_id));
+        setDuration(response.duration_seconds);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error generating audio:", error);
+        alert("Failed to generate audio. Please try again.");
+        setIsLoading(false);
+      }
+    };
+
+    generateAudio();
+  }, [content]);
+
+  // Update handlePlayPause to use actual audio element
+  const handlePlayPause = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
+  // Add audio event listeners
+  useEffect(() => {
+    if (!audioRef.current || !audioUrl) return;
+
+    const audio = audioRef.current;
+
+    const updateProgress = () => {
+      if (!audio) return;
+      setCurrentTime(audio.currentTime);
+      setProgress((audio.currentTime / audio.duration) * 100);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setProgress(0);
+      setCurrentTime(0);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    audio.addEventListener("timeupdate", updateProgress);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateProgress);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+    };
+  }, [audioUrl]);
+
   const handleDownload = () => {
-    // In real implementation, this would download the actual audio file
-    const link = document.createElement("a");
-    link.href = audioUrl || "#";
-    link.download = `document-audio-${
-      new Date().toISOString().split("T")[0]
-    }.mp3`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (audioResponse) {
+      const link = document.createElement("a");
+      link.href = getAudioUrl(audioResponse.audio_file_id);
+      link.download = audioResponse.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    const secs = Math.round(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
@@ -132,6 +174,9 @@ export default function AudioGenerator({
               </p>
             </div>
 
+            {/* Add hidden audio element */}
+            <audio ref={audioRef} src={audioUrl || undefined} />
+
             {/* Audio Player */}
             <div className="bg-background border border-border rounded-2xl p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -149,7 +194,7 @@ export default function AudioGenerator({
                   <div className="text-sm text-muted-foreground">
                     <div className="font-medium">Document Audio</div>
                     <div>
-                      {formatTime(currentTime)} / {formatTime(100)}
+                      {formatTime(currentTime)} / {formatTime(duration)}
                     </div>
                   </div>
                 </div>
@@ -177,12 +222,14 @@ export default function AudioGenerator({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="text-muted-foreground">Format</div>
-                <div className="font-medium">MP3, 44.1kHz</div>
+                <div className="font-medium">WAV Audio</div>
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="text-muted-foreground">Size</div>
                 <div className="font-medium">
-                  ~{Math.ceil(content.length / 50)}KB
+                  {audioResponse
+                    ? `${Math.round(audioResponse.file_size_bytes / 1024)}KB`
+                    : "..."}
                 </div>
               </div>
             </div>
