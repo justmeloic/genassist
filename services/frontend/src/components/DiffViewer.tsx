@@ -1,32 +1,37 @@
-"use client"
-import { Check, X, Sparkles, Edit } from "lucide-react"
+"use client";
+import { Sparkles, Edit } from "lucide-react";
 
 interface DiffViewerProps {
   diffResult: Array<{
-    added?: boolean
-    removed?: boolean
-    value: string
-  }>
-  onAccept: () => void
-  onReject: () => void
-  editMode: "direct" | "llm"
+    added?: boolean;
+    removed?: boolean;
+    value: string;
+  }>;
+  onAccept: () => void;
+  onReject: () => void;
+  editMode: "direct" | "llm";
 }
 
-export default function DiffViewer({ diffResult, onAccept, onReject, editMode }: DiffViewerProps) {
+export default function DiffViewer({
+  diffResult,
+  onAccept,
+  onReject,
+  editMode,
+}: DiffViewerProps) {
   const renderDiffText = () => {
     return diffResult.map((part, index) => {
-      let className = ""
-      let prefix = ""
+      let className = "";
+      let prefix = "";
 
       if (part.added) {
-        className = "bg-green-100 text-green-800 border-l-4 border-green-500"
-        prefix = "+ "
+        className = "bg-green-100 text-green-800 border-l-4 border-green-500";
+        prefix = "+ ";
       } else if (part.removed) {
-        className = "bg-red-100 text-red-800 border-l-4 border-red-500"
-        prefix = "- "
+        className = "bg-red-100 text-red-800 border-l-4 border-red-500";
+        prefix = "- ";
       } else {
-        className = "bg-gray-50"
-        prefix = "  "
+        className = "bg-white";
+        prefix = "  ";
       }
 
       return (
@@ -36,16 +41,16 @@ export default function DiffViewer({ diffResult, onAccept, onReject, editMode }:
             {part.value}
           </span>
         </div>
-      )
-    })
-  }
+      );
+    });
+  };
 
-  const hasChanges = diffResult.some((part) => part.added || part.removed)
+  const hasChanges = diffResult.some((part) => part.added || part.removed);
 
   return (
-    <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out">
-      <div className="p-6 border-b border-border">
-        <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-3">
+    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
+      <div className="p-6 border-border">
+        <h2 className="text-xl opacity-65 ml-4 text-card-foreground flex items-center gap-3">
           {editMode === "llm" ? (
             <>
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -67,7 +72,7 @@ export default function DiffViewer({ diffResult, onAccept, onReject, editMode }:
       <div className="p-6">
         {hasChanges ? (
           <>
-            <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-2xl">
+            <div className="mb-6 p-4 bg-blue-100/50 dark:bg-blue-950/20  rounded-2xl">
               <div className="text-sm text-blue-800 dark:text-blue-200">
                 <div className="flex items-center gap-6 mb-3">
                   <span className="flex items-center gap-2">
@@ -85,24 +90,22 @@ export default function DiffViewer({ diffResult, onAccept, onReject, editMode }:
               </div>
             </div>
 
-            <div className="border border-border rounded-2xl max-h-96 overflow-y-auto scrollbar-hide">
+            <div className=" rounded-2xl max-h-96 overflow-y-auto scrollbar-hide">
               {renderDiffText()}
             </div>
 
-            <div className="flex gap-4 mt-8">
+            <div className="flex justify-center gap-4 mt-8">
               <button
                 onClick={onAccept}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors"
               >
-                <Check className="w-5 h-5" />
-                Accept Changes
+                Accept
               </button>
               <button
                 onClick={onReject}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-gray-50 text-red-600 border-2 border-red-200 rounded-full font-medium transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 text-red-600 border-2 border-red-200 rounded-full font-medium transition-colors"
               >
-                <X className="w-5 h-5" />
-                Reject Changes
+                Reject
               </button>
             </div>
           </>
@@ -115,5 +118,5 @@ export default function DiffViewer({ diffResult, onAccept, onReject, editMode }:
         )}
       </div>
     </div>
-  )
+  );
 }

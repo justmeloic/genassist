@@ -50,7 +50,7 @@ export default function Editor({
     <>
       <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-all duration-300">
         <div className="flex items-center justify-between p-6  border-border">
-          <h2 className="text-xl  text-card-foreground opacity-65 ml-4">
+          <h2 className="text-xl text-card-foreground opacity-65 ml-4">
             Direct Editor
           </h2>
           <div className="flex items-center gap-3">

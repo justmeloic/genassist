@@ -236,11 +236,12 @@ export default function DocumentEditor() {
 
             {/* Default State */}
             {!showDiff && !showAudioGenerator && (
-              <div className="bg-card rounded-3xl border border-border p-8 h-full min-h-[500px] flex items-center justify-center shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out">
-                <div className="text-center text-muted-foreground">
-                  <div className="text-6xl mb-4">📝</div>
-                  <p className="text-xl font-medium mb-2">Ready for changes</p>
-                  <p className="text-sm">
+              <div className="bg-card rounded-3xl border-border p-8 h-full min-h-[500px] flex flex-col shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
+                <div className="text-center">
+                  <h2 className="text-xl text-card-foreground opacity-65 mt-8 mb-2 ">
+                    Edit reviews will be displayed here
+                  </h2>
+                  <p className="text-sm  opacity-50">
                     Edit directly, use AI suggestions, or generate audio to see
                     content here
                   </p>
