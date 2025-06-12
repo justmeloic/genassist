@@ -1,26 +1,30 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Sparkles, Loader2 } from "lucide-react"
+import { useState } from "react";
+import { Sparkles, Loader2 } from "lucide-react";
 
 interface LlmPromptProps {
-  onSubmit: (prompt: string) => void
-  isLoading: boolean
-  disabled?: boolean
+  onSubmit: (prompt: string) => void;
+  isLoading: boolean;
+  disabled?: boolean;
 }
 
-export default function LlmPrompt({ onSubmit, isLoading, disabled = false }: LlmPromptProps) {
-  const [prompt, setPrompt] = useState("")
+export default function LlmPrompt({
+  onSubmit,
+  isLoading,
+  disabled = false,
+}: LlmPromptProps) {
+  const [prompt, setPrompt] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (prompt.trim() && !isLoading && !disabled) {
-      onSubmit(prompt.trim())
-      setPrompt("")
+      onSubmit(prompt.trim());
+      setPrompt("");
     }
-  }
+  };
 
   const suggestedPrompts = [
     "Fix all spelling and grammar mistakes",
@@ -28,12 +32,12 @@ export default function LlmPrompt({ onSubmit, isLoading, disabled = false }: Llm
     "Simplify the language for better readability",
     "Add more details and examples",
     "Make it more concise",
-  ]
+  ];
 
   return (
-    <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-lg hover:shadow-2xl focus-within:shadow-2xl transition-shadow duration-300 ease-in-out">
-      <div className="p-6 border-b border-border">
-        <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-3">
+    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-2xl transition-shadow duration-300 ease-in-out">
+      <div className="p-6 border-border">
+        <h2 className="text-xl opacity-65 text-card-foreground flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
@@ -73,7 +77,9 @@ export default function LlmPrompt({ onSubmit, isLoading, disabled = false }: Llm
         </form>
 
         <div className="mt-6">
-          <p className="text-sm text-muted-foreground mb-3 font-medium">Quick suggestions:</p>
+          <p className="text-sm text-muted-foreground mb-3 font-medium">
+            Quick suggestions:
+          </p>
           <div className="flex flex-wrap gap-2">
             {suggestedPrompts.map((suggestion, index) => (
               <button
@@ -89,5 +95,5 @@ export default function LlmPrompt({ onSubmit, isLoading, disabled = false }: Llm
         </div>
       </div>
     </div>
-  )
+  );
 }

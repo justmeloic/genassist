@@ -156,9 +156,9 @@ export default function DocumentEditor() {
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="text-center py-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Document Editor
+              Editor
             </span>
           </h1>
           <p className="text-muted-foreground text-lg">

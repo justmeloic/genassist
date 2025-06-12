@@ -1,73 +1,78 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { X, Download, Play, Pause, Headphones, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { X, Download, Play, Pause, Headphones, Loader2 } from "lucide-react";
 
 interface AudioGeneratorProps {
-  content: string
-  onClose: () => void
+  content: string;
+  onClose: () => void;
 }
 
-export default function AudioGenerator({ content, onClose }: AudioGeneratorProps) {
-  const [isLoading, setIsLoading] = useState(true)
-  const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [currentTime, setCurrentTime] = useState(0)
+export default function AudioGenerator({
+  content,
+  onClose,
+}: AudioGeneratorProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
 
   // Simulate audio generation
   useEffect(() => {
     const timer = setTimeout(() => {
       // For demo purposes, create a mock audio URL
       // In real implementation, this would be the actual generated audio file
-      setAudioUrl("/placeholder-audio.mp3") // This would be replaced with actual audio URL
-      setIsLoading(false)
-    }, 3000) // Simulate 3 seconds of processing
+      setAudioUrl("/placeholder-audio.mp3"); // This would be replaced with actual audio URL
+      setIsLoading(false);
+    }, 3000); // Simulate 3 seconds of processing
 
-    return () => clearTimeout(timer)
-  }, [])
+    return () => clearTimeout(timer);
+  }, []);
 
   const handlePlayPause = () => {
     // In real implementation, this would control actual audio playback
-    setIsPlaying(!isPlaying)
+    setIsPlaying(!isPlaying);
 
     // Simulate audio progress for demo
     if (!isPlaying) {
       const interval = setInterval(() => {
         setCurrentTime((prev) => {
           if (prev >= 100) {
-            setIsPlaying(false)
-            clearInterval(interval)
-            return 0
+            setIsPlaying(false);
+            clearInterval(interval);
+            return 0;
           }
-          return prev + 1
-        })
-        setProgress((prev) => Math.min(prev + 1, 100))
-      }, 100)
+          return prev + 1;
+        });
+        setProgress((prev) => Math.min(prev + 1, 100));
+      }, 100);
     }
-  }
+  };
 
   const handleDownload = () => {
     // In real implementation, this would download the actual audio file
-    const link = document.createElement("a")
-    link.href = audioUrl || "#"
-    link.download = `document-audio-${new Date().toISOString().split("T")[0]}.mp3`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = audioUrl || "#";
+    link.download = `document-audio-${
+      new Date().toISOString().split("T")[0]
+    }.mp3`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out">
-      <div className="flex items-center justify-between p-6 border-b border-border">
-        <h2 className="text-xl font-semibold text-card-foreground flex items-center gap-3">
+    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
+      <div className="flex items-center justify-between p-6  border-border">
+        <h2 className="text-xl opacity-65  text-card-foreground flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
             <Headphones className="w-4 h-4 text-white" />
           </div>
@@ -93,8 +98,12 @@ export default function AudioGenerator({ content, onClose }: AudioGeneratorProps
             </div>
 
             <div className="text-center space-y-2">
-              <h3 className="text-lg font-semibold text-card-foreground">Generating Audio</h3>
-              <p className="text-sm text-muted-foreground">Converting your document to speech...</p>
+              <h3 className="text-lg font-semibold text-card-foreground">
+                Generating Audio
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Converting your document to speech...
+              </p>
               <div className="w-64 bg-muted rounded-full h-2 overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
               </div>
@@ -111,10 +120,12 @@ export default function AudioGenerator({ content, onClose }: AudioGeneratorProps
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-2xl p-4">
+            <div className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800 rounded-2xl p-4">
               <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium">Audio Generated Successfully!</span>
+                <span className="font-medium">
+                  Audio Generated Successfully!
+                </span>
               </div>
               <p className="text-sm text-green-600 dark:text-green-300 mt-1">
                 Your document has been converted to high-quality audio.
@@ -129,7 +140,11 @@ export default function AudioGenerator({ content, onClose }: AudioGeneratorProps
                     onClick={handlePlayPause}
                     className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full flex items-center justify-center text-white transition-all"
                   >
-                    {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
+                    {isPlaying ? (
+                      <Pause className="w-5 h-5" />
+                    ) : (
+                      <Play className="w-5 h-5 ml-0.5" />
+                    )}
                   </button>
                   <div className="text-sm text-muted-foreground">
                     <div className="font-medium">Document Audio</div>
@@ -166,12 +181,14 @@ export default function AudioGenerator({ content, onClose }: AudioGeneratorProps
               </div>
               <div className="bg-muted/50 rounded-xl p-3">
                 <div className="text-muted-foreground">Size</div>
-                <div className="font-medium">~{Math.ceil(content.length / 50)}KB</div>
+                <div className="font-medium">
+                  ~{Math.ceil(content.length / 50)}KB
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
