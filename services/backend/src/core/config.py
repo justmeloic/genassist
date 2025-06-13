@@ -50,8 +50,8 @@ class Settings(BaseSettings):
 
     # Default Speakers Configuration
     DEFAULT_SPEAKERS: List[Dict[str, str]] = [
-        {"speaker": "Joe", "voice_name": "KORE"},
-        {"speaker": "Jane", "voice_name": "PUCK"},
+        {"speaker": "Joe", "voice_name": "Algieba"},
+        {"speaker": "Jane", "voice_name": "Kore"},
     ]
 
     @validator("GEMINI_API_KEY", pre=True)

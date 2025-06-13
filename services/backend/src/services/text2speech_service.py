@@ -48,21 +48,13 @@ class Text2SpeechService:
         self,
         speakers: List[SpeakerConfig],
     ) -> types.SpeechConfig:
-        """
-        Create multi-speaker speech configuration.
-
-        Args:
-            speakers: List of speaker configurations
-
-        Returns:
-            SpeechConfig: Speech configuration for multi-speaker TTS
-        """
+        """Create multi-speaker speech configuration."""
         speaker_configs = [
             types.SpeakerVoiceConfig(
                 speaker=speaker.speaker,
                 voice_config=types.VoiceConfig(
                     prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                        voice_name=speaker.voice_name.value
+                        voice_name=speaker.voice_name.value,
                     )
                 ),
             )
@@ -74,6 +66,13 @@ class Text2SpeechService:
                 speaker_voice_configs=speaker_configs
             )
         )
+
+    def _format_multi_speaker_text(self, text: str) -> str:
+        """Format text for multi-speaker TTS."""
+        if not text.startswith("TTS the following conversation"):
+            return f"""TTS the following conversation:
+{text}"""
+        return text
 
     async def generate_speech(
         self,
@@ -103,6 +102,16 @@ class Text2SpeechService:
                 f"Generating {'multi-speaker' if is_multi_speaker else 'single-speaker'} speech"
             )
 
+            # Use default speakers if none provided for multi-speaker
+            if is_multi_speaker and not speakers:
+                speakers = [
+                    SpeakerConfig(**speaker_config)
+                    for speaker_config in settings.DEFAULT_SPEAKERS
+                ]
+
+            formatted_text = (
+                self._format_multi_speaker_text(text) if is_multi_speaker else text
+            )
             speech_config = (
                 self._create_multi_speaker_config(speakers)
                 if is_multi_speaker
@@ -116,13 +125,24 @@ class Text2SpeechService:
             )
 
             response = await self.gemini_service.generate_content(
-                content=text,
+                content=formatted_text,
                 model=model,
                 response_modalities=["AUDIO"],
                 speech_config=speech_config,
             )
 
-            audio_data = response.candidates[0].content.parts[0].inline_data.data
+            if not response or not response.candidates:
+                raise Exception("No response from Gemini API")
+                
+            candidate = response.candidates[0]
+            if not candidate.content or not candidate.content.parts:
+                raise Exception("Invalid response structure from Gemini API")
+                
+            part = candidate.content.parts[0]
+            if not hasattr(part, 'inline_data') or not part.inline_data or not part.inline_data.data:
+                raise Exception("No audio data in response")
+
+            audio_data = part.inline_data.data
             logger.info("Speech generation completed")
             return audio_data
 

@@ -47,7 +47,9 @@ async def generate_speech(
         # Generate speech
         audio_data = await service.generate_speech(
             text=request.text,
+            is_multi_speaker=request.is_multi_speaker,
             voice_name=request.voice_name,
+            speakers=request.speakers,
             speed=request.speed,
             pitch=request.pitch,
         )

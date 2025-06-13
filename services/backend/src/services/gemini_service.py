@@ -53,6 +53,18 @@ class GeminiService:
                 config=config,
             )
 
+            # Add response validation and logging
+            if not response or not response.candidates:
+                raise Exception("Empty response from Gemini API")
+
+            logger.debug(f"Response structure: {response}")
+            logger.debug(
+                f"First candidate: {response.candidates[0] if response.candidates else 'No candidates'}"
+            )
+
+            if not response.candidates[0].content:
+                raise Exception("No content in response")
+
             logger.debug("Content generation completed")
             return response
 

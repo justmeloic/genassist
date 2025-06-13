@@ -10,7 +10,7 @@ class VoiceName(str, Enum):
     """Available voice names."""
 
     KORE = "Kore"
-    # Add more voices as they become available
+    ALG = "Algieba"
 
 
 class SpeechSpeed(str, Enum):
