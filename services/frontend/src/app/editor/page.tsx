@@ -6,6 +6,7 @@ import Editor from "@/components/Editor";
 import DiffViewer from "@/components/DiffViewer";
 import LlmPrompt from "@/components/LlmPrompt";
 import AudioGenerator from "@/components/AudioGenerator";
+import SpeakerModeDialog from "@/components/SpeakerModeDialog";
 import { editDocument } from "@/lib/api";
 
 export default function DocumentEditor() {
@@ -17,6 +18,8 @@ export default function DocumentEditor() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
   const [showAudioGenerator, setShowAudioGenerator] = useState(false);
+  const [showSpeakerDialog, setShowSpeakerDialog] = useState(false);
+  const [selectedIsMultiSpeaker, setSelectedIsMultiSpeaker] = useState(false);
   const [editMode, setEditMode] = useState<"direct" | "llm">("direct");
   const [documentHistory, setDocumentHistory] = useState<string[]>([
     originalContent,
@@ -136,9 +139,13 @@ export default function DocumentEditor() {
   };
 
   const handleGenerateAudio = () => {
+    setShowSpeakerDialog(true);
+  };
+
+  const handleSpeakerModeSelect = (isMultiSpeaker: boolean) => {
+    setSelectedIsMultiSpeaker(isMultiSpeaker);
+    setShowSpeakerDialog(false);
     setShowAudioGenerator(true);
-    // Close diff viewer if open
-    setShowDiff(false);
   };
 
   const handleCloseAudioGenerator = () => {
@@ -199,6 +206,7 @@ export default function DocumentEditor() {
               {showAudioGenerator && (
                 <AudioGenerator
                   content={proposedContent || originalContent}
+                  isMultiSpeaker={selectedIsMultiSpeaker}
                   onClose={handleCloseAudioGenerator}
                 />
               )}
@@ -237,6 +245,13 @@ export default function DocumentEditor() {
           </div>
         </div>
       </div>
+
+      {showSpeakerDialog && (
+        <SpeakerModeDialog
+          onSelect={handleSpeakerModeSelect}
+          onClose={() => setShowSpeakerDialog(false)}
+        />
+      )}
     </div>
   );
 }

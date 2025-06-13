@@ -7,11 +7,13 @@ import { generateSpeech, getAudioUrl } from "@/lib/api";
 
 interface AudioGeneratorProps {
   content: string;
+  isMultiSpeaker: boolean;
   onClose: () => void;
 }
 
 export default function AudioGenerator({
   content,
+  isMultiSpeaker,
   onClose,
 }: AudioGeneratorProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,8 @@ export default function AudioGenerator({
         setStatus("generating");
         const response = await generateSpeech({
           text: content,
-          voice_name: "Kore",
+          is_multi_speaker: isMultiSpeaker,
+          voice_name: isMultiSpeaker ? undefined : "Kore",
           speed: "normal",
           pitch: "normal",
         });
@@ -54,7 +57,7 @@ export default function AudioGenerator({
     };
 
     generateAudio();
-  }, [content]);
+  }, [content, isMultiSpeaker]);
 
   // Update handlePlayPause to use actual audio element
   const handlePlayPause = async () => {

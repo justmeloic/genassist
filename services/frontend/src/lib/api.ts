@@ -17,7 +17,8 @@ interface DocumentEditResponse {
 
 export interface TextToSpeechRequest {
   text: string;
-  voice_name: string;
+  is_multi_speaker: boolean;
+  voice_name?: string;
   speed: "slow" | "normal" | "fast";
   pitch: "low" | "normal" | "high";
 }

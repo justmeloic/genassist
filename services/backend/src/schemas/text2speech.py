@@ -1,10 +1,20 @@
 """Text-to-speech API schemas."""
 
-from typing import Optional
-
+from typing import List, Optional
 from pydantic import BaseModel, Field, validator
+from src.core.config import settings
 
 from src.models.text2speech import VoiceName, SpeechSpeed, SpeechPitch
+
+
+class SpeakerConfig(BaseModel):
+    """Speaker configuration for multi-speaker TTS."""
+
+    speaker: str = Field(..., description="Speaker identifier in the conversation")
+    voice_name: VoiceName = Field(
+        default=VoiceName.KORE,
+        description="Voice to use for this speaker",
+    )
 
 
 class Text2SpeechRequest(BaseModel):
@@ -16,9 +26,15 @@ class Text2SpeechRequest(BaseModel):
         min_length=1,
         max_length=50000,
     )
-    voice_name: VoiceName = Field(
-        default=VoiceName.KORE,
-        description="Voice to use for speech generation",
+    is_multi_speaker: bool = Field(
+        default=False, description="Whether to use multi-speaker TTS"
+    )
+    voice_name: Optional[VoiceName] = Field(
+        default=VoiceName.KORE, description="Voice to use for single speaker TTS"
+    )
+    speakers: Optional[List[SpeakerConfig]] = Field(
+        default=None,
+        description="Speaker configurations for multi-speaker TTS. If not provided, defaults will be used.",
     )
     speed: SpeechSpeed = Field(
         default=SpeechSpeed.NORMAL,
@@ -29,11 +45,19 @@ class Text2SpeechRequest(BaseModel):
         description="Speech pitch",
     )
 
-    @validator("text")
-    def validate_text(cls, v):
-        if not v.strip():
-            raise ValueError("Text cannot be empty")
-        return v.strip()
+    @validator("speakers")
+    def validate_speakers(cls, v, values):
+        """Validate speaker configurations."""
+        if values.get("is_multi_speaker"):
+            if not v:
+                # Use default speakers if none provided
+                return [
+                    SpeakerConfig(**speaker_config)
+                    for speaker_config in settings.DEFAULT_SPEAKERS
+                ]
+        elif v:
+            raise ValueError("Speakers should not be provided for single-speaker TTS")
+        return v
 
 
 class Text2SpeechResponse(BaseModel):

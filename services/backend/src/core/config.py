@@ -1,9 +1,17 @@
 """Core configuration settings."""
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 from pydantic import validator
+
+
+class SpeakerDefaults(BaseModel):
+    """Default speaker configuration."""
+
+    speaker: str
+    voice_name: str
 
 
 class Settings(BaseSettings):
@@ -23,6 +31,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_MODEL_DOCUMENT: str = "gemini-2.0-flash"
     GEMINI_MODEL_TTS: str = "gemini-2.5-flash-preview-tts"
+    GEMINI_MODEL_MULTI_TTS: str = "gemini-2.5-flash-preview-tts"
 
     # API Configuration
     API_V1_STR: str = "/v1/api"
@@ -38,6 +47,12 @@ class Settings(BaseSettings):
     UPLOAD_DIR: str = "uploads"
     OUTPUT_DIR: str = "outputs"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+
+    # Default Speakers Configuration
+    DEFAULT_SPEAKERS: List[Dict[str, str]] = [
+        {"speaker": "Joe", "voice_name": "KORE"},
+        {"speaker": "Jane", "voice_name": "PUCK"},
+    ]
 
     @validator("GEMINI_API_KEY", pre=True)
     def validate_gemini_api_key(cls, v: str) -> str:

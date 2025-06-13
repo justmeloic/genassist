@@ -1,13 +1,14 @@
-"""Text-to-speech service."""
+"""Text-to-speech service implementation."""
 
+from typing import List, Optional
 import wave
-from typing import Optional
-
-from google.genai import types
 from loguru import logger
+from google import genai
+from google.genai import types
 
 from src.core.config import settings
 from src.models.text2speech import VoiceName, SpeechSpeed, SpeechPitch
+from src.schemas.text2speech import SpeakerConfig
 from src.services.gemini_service import GeminiService
 
 
@@ -43,10 +44,43 @@ class Text2SpeechService:
             )
         )
 
+    def _create_multi_speaker_config(
+        self,
+        speakers: List[SpeakerConfig],
+    ) -> types.SpeechConfig:
+        """
+        Create multi-speaker speech configuration.
+
+        Args:
+            speakers: List of speaker configurations
+
+        Returns:
+            SpeechConfig: Speech configuration for multi-speaker TTS
+        """
+        speaker_configs = [
+            types.SpeakerVoiceConfig(
+                speaker=speaker.speaker,
+                voice_config=types.VoiceConfig(
+                    prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                        voice_name=speaker.voice_name.value
+                    )
+                ),
+            )
+            for speaker in speakers
+        ]
+
+        return types.SpeechConfig(
+            multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                speaker_voice_configs=speaker_configs
+            )
+        )
+
     async def generate_speech(
         self,
         text: str,
-        voice_name: VoiceName = VoiceName.KORE,
+        is_multi_speaker: bool = False,
+        voice_name: Optional[VoiceName] = VoiceName.KORE,
+        speakers: Optional[List[SpeakerConfig]] = None,
         speed: SpeechSpeed = SpeechSpeed.NORMAL,
         pitch: SpeechPitch = SpeechPitch.NORMAL,
     ) -> bytes:
@@ -55,7 +89,9 @@ class Text2SpeechService:
 
         Args:
             text: Text to convert to speech
-            voice_name: Voice to use
+            is_multi_speaker: Whether to use multi-speaker TTS
+            voice_name: Voice to use for single speaker TTS
+            speakers: Speaker configurations for multi-speaker TTS
             speed: Speech speed
             pitch: Speech pitch
 
@@ -63,23 +99,30 @@ class Text2SpeechService:
             bytes: Audio data
         """
         try:
-            logger.info(f"Generating speech with voice: {voice_name.value}")
+            logger.info(
+                f"Generating {'multi-speaker' if is_multi_speaker else 'single-speaker'} speech"
+            )
 
-            speech_config = self._create_speech_config(
-                voice_name=voice_name,
-                speed=speed,
-                pitch=pitch,
+            speech_config = (
+                self._create_multi_speaker_config(speakers)
+                if is_multi_speaker
+                else self._create_speech_config(voice_name, speed, pitch)
+            )
+
+            model = (
+                settings.GEMINI_MODEL_MULTI_TTS
+                if is_multi_speaker
+                else settings.GEMINI_MODEL_TTS
             )
 
             response = await self.gemini_service.generate_content(
                 content=text,
-                model=settings.GEMINI_MODEL_TTS,
+                model=model,
                 response_modalities=["AUDIO"],
                 speech_config=speech_config,
             )
 
             audio_data = response.candidates[0].content.parts[0].inline_data.data
-
             logger.info("Speech generation completed")
             return audio_data
 
