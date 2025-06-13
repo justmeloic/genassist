@@ -48,7 +48,7 @@ export default function Editor({
 
   return (
     <>
-      <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-all duration-300">
+      <div className="bg-card rounded-3xl dark:border dark:shadow border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-all duration-300">
         <div className="flex items-center justify-between p-6  border-border">
           <h2 className="text-xl text-card-foreground opacity-65 ml-4">
             Direct Editor
@@ -70,7 +70,7 @@ export default function Editor({
             value={localContent}
             onChange={handleChange}
             disabled={disabled}
-            className="w-full h-96 p-4 bg-background rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted disabled:cursor-not-allowed opacity-70 text-foreground placeholder:text-muted-foreground transition-all duration-300"
+            className="w-full h-96 p-4 dark:border bg-background  rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted disabled:cursor-not-allowed opacity-70 text-foreground placeholder:text-muted-foreground transition-all duration-300"
             placeholder="Start typing your document here... (Markdown supported)"
           />
           <div className="mt-3 space-y-3">
@@ -81,7 +81,7 @@ export default function Editor({
               <button
                 onClick={onRevert}
                 disabled={!canRevert || disabled}
-                className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Revert to previous state"
               >
                 <Undo className="w-4 h-4" />
@@ -90,7 +90,7 @@ export default function Editor({
               <button
                 onClick={() => setIsViewerOpen(true)}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="View document with Markdown formatting"
               >
                 <FileText className="w-4 h-4" />
@@ -100,7 +100,7 @@ export default function Editor({
               <button
                 onClick={onSave}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Save document locally"
               >
                 <Save className="w-4 h-4" />
@@ -110,10 +110,10 @@ export default function Editor({
               <button
                 onClick={onReadAloud}
                 disabled={disabled}
-                className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:border dark:border-gray-700 ${
                   isReading
                     ? "bg-gradient-to-r from-blue-500/50 to-pink-500/50 text-white"
-                    : "bg-blue-100/50 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60"
+                    : "bg-blue-100/50 dark:bg-transparent hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300"
                 }`}
                 title={isReading ? "Stop reading" : "Read document aloud"}
               >
@@ -124,7 +124,7 @@ export default function Editor({
               <button
                 onClick={onGenerateAudio}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-2 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Generate audio file from document"
               >
                 <Headphones className="w-4 h-4" />

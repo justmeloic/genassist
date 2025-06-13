@@ -24,13 +24,15 @@ export default function DiffViewer({
       let prefix = "";
 
       if (part.added) {
-        className = "bg-green-100 text-green-800 border-l-4 border-green-500";
+        className =
+          "bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-300 border-l-4 border-green-500";
         prefix = "+ ";
       } else if (part.removed) {
-        className = "bg-red-100 text-red-800 border-l-4 border-red-500";
+        className =
+          "bg-red-100 dark:bg-red-950/30 text-red-800 dark:text-red-300 border-l-4 border-red-500";
         prefix = "- ";
       } else {
-        className = "bg-white";
+        className = "bg-white dark:bg-gray-900/50 dark:text-gray-300";
         prefix = "  ";
       }
 
@@ -48,7 +50,7 @@ export default function DiffViewer({
   const hasChanges = diffResult.some((part) => part.added || part.removed);
 
   return (
-    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
+    <div className="bg-card rounded-3xl dark:border dark:shadow border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
       <div className="p-6 border-border">
         <h2 className="text-xl opacity-65 ml-4 text-card-foreground flex items-center gap-3">
           {editMode === "llm" ? (

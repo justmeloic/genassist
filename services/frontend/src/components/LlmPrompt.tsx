@@ -35,7 +35,7 @@ export default function LlmPrompt({
   ];
 
   return (
-    <div className="bg-card rounded-3xl border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-shadow duration-300 ease-in-out">
+    <div className="bg-card rounded-3xl dark:border dark:shadow-none border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-shadow duration-300 ease-in-out">
       <div className="p-6 border-border">
         <h2 className="text-xl opacity-65 text-card-foreground flex items-center gap-3">
           <Image
@@ -82,7 +82,7 @@ export default function LlmPrompt({
                 key={index}
                 onClick={() => setPrompt(suggestion)}
                 disabled={isLoading || disabled}
-                className="px-3 py-2 text-xs bg-secondary hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 hover:text-purple-700 hover:border-purple-200 hover:shadow-md hover:scale-105 text-secondary-foreground rounded-full border border-border disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform"
+                className="px-3 py-2 text-xs bg-secondary dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-600/20 dark:hover:to-pink-600/20 hover:text-purple-700 dark:hover:text-gray-200 hover:border-purple-200 dark:hover:border-gray-600 text-secondary-foreground dark:text-gray-400 rounded-full border border-border disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out transform hover:scale-105"
               >
                 {suggestion}
               </button>

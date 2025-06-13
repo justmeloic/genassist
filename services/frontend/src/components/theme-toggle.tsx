@@ -37,12 +37,12 @@ export function ThemeToggle() {
         <button
           onClick={() => setTheme(isDark ? "light" : "dark")}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-            isDark ? "bg-blue-600" : "bg-gray-200"
+            isDark ? "bg-gray-600/30" : "bg-gray-200"
           }`}
           aria-label="Toggle theme"
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+            className={`inline-block h-4 w-4 transform rounded-full dark:bg-gray-300 bg-white shadow-sm transition-transform ${
               isDark ? "translate-x-6" : "translate-x-1"
             }`}
           />
@@ -52,12 +52,12 @@ export function ThemeToggle() {
       {/* Small screen toggle (icon only) */}
       <button
         onClick={() => setTheme(isDark ? "light" : "dark")}
-        className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
+        className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full bg-secondary hover:bg-secondary/80 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
         aria-label="Toggle theme"
       >
         {isDark ? (
           <svg
-            className="h-5 w-5 text-yellow-500"
+            className="h-5 w-5 text-purple-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

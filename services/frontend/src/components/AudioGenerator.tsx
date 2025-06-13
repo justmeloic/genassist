@@ -112,7 +112,7 @@ export default function AudioGenerator({
   };
 
   return (
-    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
+    <div className="bg-card rounded-3xl dark:border dark:shadow-none border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
       <div className="flex items-center justify-between p-6  border-border">
         <h2 className="text-xl opacity-65  text-card-foreground flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
@@ -183,7 +183,7 @@ export default function AudioGenerator({
                 <div className="flex items-center gap-4">
                   <button
                     onClick={handlePlayPause}
-                    className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-full flex items-center justify-center text-white transition-all"
+                    className="w-12 h-12 bg-gradient-to-r from-purple-500/65 to-pink-500/65 hover:from-purple-600 hover:to-pink-500/50 rounded-full flex items-center justify-center text-white transition-all"
                   >
                     {isPlaying ? (
                       <Pause className="w-5 h-5" />
@@ -200,7 +200,7 @@ export default function AudioGenerator({
                 </div>
                 <button
                   onClick={handleDownload}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Download className="w-4 h-4" />
                   Download
