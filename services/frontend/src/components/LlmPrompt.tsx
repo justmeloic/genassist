@@ -56,7 +56,7 @@ export default function LlmPrompt({
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe how you'd like to improve the document..."
-              className="w-full h-24 p-4 pb-12 bg-background border border-input rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted text-foreground/65 placeholder:text-muted-foreground transition-all duration-300"
+              className="w-full h-24 p-4 pb-12 bg-background border border-input rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted text-sm text-foreground/65 placeholder:text-muted-foreground transition-all duration-300"
               disabled={isLoading || disabled}
             />
             {prompt.trim() && (

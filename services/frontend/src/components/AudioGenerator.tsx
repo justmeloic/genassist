@@ -30,7 +30,7 @@ export default function AudioGenerator({
   >("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Generate audio when component mounts
+  // Generate audio only when component mounts
   useEffect(() => {
     const generateAudio = async () => {
       try {
@@ -57,7 +57,7 @@ export default function AudioGenerator({
     };
 
     generateAudio();
-  }, [content, isMultiSpeaker]);
+  }, []); // Remove content and isMultiSpeaker from dependencies array
 
   // Update handlePlayPause to use actual audio element
   const handlePlayPause = async () => {

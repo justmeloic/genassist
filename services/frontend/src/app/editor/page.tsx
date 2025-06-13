@@ -40,6 +40,10 @@ export default function DocumentEditor() {
 
   const handlePreviewChanges = () => {
     if (proposedContent && proposedContent !== originalContent) {
+      // Close audio generator if it's open
+      setShowAudioGenerator(false);
+
+      // Show diff viewer
       const diff = diffChars(originalContent, proposedContent);
       setDiffResult(diff);
       setShowDiff(true);
@@ -156,13 +160,13 @@ export default function DocumentEditor() {
     <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
         {/* Header */}
-        <div className="text-center py-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="text-center py-2">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
               Editor
             </span>
           </h1>
-          <p className="text-muted-foreground ">
+          <p className="text-muted-foreground mb-2 text-sm ">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
               Edit directly or use AI suggestions with visual diff approval
             </span>

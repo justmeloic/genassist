@@ -57,7 +57,7 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
             <span className="sr-only">{link.title}</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right" className="flex items-center gap-4">
+        <TooltipContent side="right" className="flex items-center gap-4 text-xs">
           {link.title}
         </TooltipContent>
       </Tooltip>
@@ -66,7 +66,7 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
         key={index}
         href={link.href}
         className={cn(
-          "flex items-center gap-3 rounded-2xl px-3 py-2 text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50 dark:text-gray-400",
+          "flex items-center gap-3 rounded-2xl px-3 py-2 text-sm text-muted-foreground hover:bg-white/50 dark:hover:bg-gray-800/50 dark:text-gray-400",
           pathname === link.href &&
             "bg-[#d3e2fd] dark:bg-blue-950/60 text-primary dark:text-blue-200 hover:bg-[#d3e2fd]/90 dark:hover:bg-blue-950/80"
         )}
@@ -80,7 +80,7 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
   return (
     <div
       className={cn(
-        "relative flex h-screen flex-col gap-4 px-3 pb-3 pt-16 transition-all duration-300 bg-[#f0f4f8] dark:bg-gray-900 shadow-[2px_0_10px_0_rgba(0,0,0,0.1)] z-10 rounded-tr-xl rounded-br-xl border-r border-gray-200 dark:border-gray-900",
+        "relative flex h-screen flex-col gap-4 px-3 pb-3 pt-16 transition-all duration-300 bg-[#f0f4f8] dark:bg-gray-600/30 shadow-[2px_0_10px_0_rgba(0,0,0,0.1)] z-10 rounded-tr-xl rounded-br-xl border-r dark:border-0 border-gray-200",
         isCollapsed && !isHovered ? "w-[80px]" : "w-[250px]",
         className
       )}

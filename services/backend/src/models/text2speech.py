@@ -1,9 +1,6 @@
 """Text-to-speech data models."""
 
 from enum import Enum
-from typing import Optional
-
-from pydantic import BaseModel, Field
 
 
 class VoiceName(str, Enum):
