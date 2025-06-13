@@ -184,15 +184,9 @@ export default function DocumentEditor() {
               canRevert={documentHistory.length > 1}
               isReading={isReading}
             />
-
-            <LlmPrompt
-              onSubmit={handleLlmSuggestion}
-              isLoading={isLoading}
-              disabled={showDiff}
-            />
           </div>
 
-          {/* Right Panel - Diff Viewer or Audio Generator */}
+          {/* Right Panel - Diff Viewer, Audio Generator, or LlmPrompt */}
           <div className="relative">
             {/* Audio Generator */}
             <div
@@ -228,18 +222,16 @@ export default function DocumentEditor() {
               )}
             </div>
 
-            {/* Default State */}
+            {/* LlmPrompt */}
             {!showDiff && !showAudioGenerator && (
-              <div className="bg-card rounded-3xl border-border p-8 h-full min-h-[500px] flex flex-col shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
-                <div className="text-center">
-                  <h2 className="text-xl text-card-foreground opacity-65 mt-8 mb-2 ">
-                    Edit reviews will be displayed here
-                  </h2>
-                  <p className="text-sm  opacity-50">
-                    Edit directly, use AI suggestions, or generate audio to see
-                    content here
-                  </p>
-                </div>
+              <div
+                className={`transition-all duration-700 ease-in-out opacity-100 translate-x-0`}
+              >
+                <LlmPrompt
+                  onSubmit={handleLlmSuggestion}
+                  isLoading={isLoading}
+                  disabled={showDiff}
+                />
               </div>
             )}
           </div>
