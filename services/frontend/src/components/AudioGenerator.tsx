@@ -22,12 +22,17 @@ export default function AudioGenerator({
   const [currentTime, setCurrentTime] = useState(0);
   const [audioResponse, setAudioResponse] =
     useState<TextToSpeechResponse | null>(null);
+  const [isAudioReady, setIsAudioReady] = useState(false);
+  const [status, setStatus] = useState<
+    "idle" | "generating" | "loading" | "ready"
+  >("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Generate audio when component mounts
   useEffect(() => {
     const generateAudio = async () => {
       try {
+        setStatus("generating");
         const response = await generateSpeech({
           text: content,
           voice_name: "Kore",
@@ -38,11 +43,13 @@ export default function AudioGenerator({
         setAudioResponse(response);
         setAudioUrl(getAudioUrl(response.audio_file_id));
         setDuration(response.duration_seconds);
+        setStatus("loading");
         setIsLoading(false);
       } catch (error) {
         console.error("Error generating audio:", error);
         alert("Failed to generate audio. Please try again.");
         setIsLoading(false);
+        setStatus("idle");
       }
     };
 
@@ -50,15 +57,19 @@ export default function AudioGenerator({
   }, [content]);
 
   // Update handlePlayPause to use actual audio element
-  const handlePlayPause = () => {
-    if (!audioRef.current) return;
+  const handlePlayPause = async () => {
+    if (!audioRef.current || !isAudioReady) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+    try {
+      if (isPlaying) {
+        await audioRef.current.pause();
+      } else {
+        await audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    } catch (error) {
+      console.error("Error playing/pausing audio:", error);
     }
-    setIsPlaying(!isPlaying);
   };
 
   // Add audio event listeners
@@ -81,6 +92,7 @@ export default function AudioGenerator({
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
+      setIsAudioReady(true);
     };
 
     audio.addEventListener("timeupdate", updateProgress);
@@ -162,20 +174,41 @@ export default function AudioGenerator({
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800 rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="font-medium">
-                  Audio Generated Successfully!
-                </span>
+            {status === "loading" ? (
+              <div className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 rounded-2xl p-4">
+                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="font-medium">Loading Audio...</span>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">
+                  Please wait while we prepare your audio for playback.
+                </p>
               </div>
-              <p className="text-sm text-green-600 dark:text-green-300 mt-1">
-                Your document has been converted to high-quality audio.
-              </p>
-            </div>
+            ) : status === "ready" ? (
+              <div className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800 rounded-2xl p-4">
+                <div className="flex items-center gap-2 text-green-800 dark:text-green-200">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="font-medium">Audio Ready to Play!</span>
+                </div>
+                <p className="text-sm text-green-600 dark:text-green-300 mt-1">
+                  Your document has been converted to high-quality audio.
+                </p>
+              </div>
+            ) : null}
 
             {/* Add hidden audio element */}
-            <audio ref={audioRef} src={audioUrl || undefined} />
+            <audio
+              ref={audioRef}
+              src={audioUrl || undefined}
+              onCanPlayThrough={() => {
+                setIsAudioReady(true);
+                setStatus("ready");
+              }}
+              onLoadStart={() => {
+                setIsAudioReady(false);
+                setStatus("loading");
+              }}
+            />
 
             {/* Audio Player */}
             <div className="bg-background border border-border rounded-2xl p-6 space-y-4">
@@ -183,9 +216,12 @@ export default function AudioGenerator({
                 <div className="flex items-center gap-4">
                   <button
                     onClick={handlePlayPause}
-                    className="w-12 h-12 bg-gradient-to-r from-purple-500/65 to-pink-500/65 hover:from-purple-600 hover:to-pink-500/50 rounded-full flex items-center justify-center text-white transition-all"
+                    disabled={!isAudioReady}
+                    className="w-12 h-12 bg-gradient-to-r from-purple-500/65 to-pink-500/65 hover:from-purple-600 hover:to-pink-500/50 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isPlaying ? (
+                    {!isAudioReady ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : isPlaying ? (
                       <Pause className="w-5 h-5" />
                     ) : (
                       <Play className="w-5 h-5 ml-0.5" />
