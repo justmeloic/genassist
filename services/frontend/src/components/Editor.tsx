@@ -70,7 +70,7 @@ export default function Editor({
             value={localContent}
             onChange={handleChange}
             disabled={disabled}
-            className="w-full h-96 p-4 bg-background  border-input rounded-2xl resize-none disabled:bg-muted disabled:cursor-not-allowed opacity-70 text-foreground placeholder:text-muted-foreground transition-all duration-300"
+            className="w-full h-96 p-4 bg-background rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted disabled:cursor-not-allowed opacity-70 text-foreground placeholder:text-muted-foreground transition-all duration-300"
             placeholder="Start typing your document here... (Markdown supported)"
           />
           <div className="mt-3 space-y-3">

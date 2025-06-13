@@ -1,49 +1,56 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { X } from "lucide-react"
-import ReactMarkdown from "react-markdown"
+import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface DocumentViewerProps {
-  content: string
-  onClose: () => void
+  content: string;
+  onClose: () => void;
 }
 
-export default function DocumentViewer({ content, onClose }: DocumentViewerProps) {
-  const modalRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
+export default function DocumentViewer({
+  content,
+  onClose,
+}: DocumentViewerProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Close on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose()
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [onClose])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
 
   // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && contentRef.current && !contentRef.current.contains(e.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        contentRef.current &&
+        !contentRef.current.contains(e.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [onClose])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   // Prevent scrolling of background
   useEffect(() => {
-    document.body.style.overflow = "hidden"
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "auto"
-    }
-  }, [])
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
   return (
     <div
@@ -54,8 +61,10 @@ export default function DocumentViewer({ content, onClose }: DocumentViewerProps
         ref={contentRef}
         className="bg-card w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-pronounced-xl overflow-hidden transition-transform duration-300 animate-in fade-in slide-in-from-bottom-4"
       >
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-card-foreground">Document Viewer</h2>
+        <div className="flex items-center justify-between p-6  border-border">
+          <h2 className="text-xl ml-4 opacity-65 text-card-foreground">
+            Document Viewer
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
@@ -69,15 +78,8 @@ export default function DocumentViewer({ content, onClose }: DocumentViewerProps
             <ReactMarkdown>{content}</ReactMarkdown>
           </div>
         </div>
-        <div className="p-4 border-t border-border flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-full bg-secondary hover:bg-secondary/80 transition-colors"
-          >
-            Close
-          </button>
-        </div>
+        <div className="p-4 border-border flex justify-end"></div>
       </div>
     </div>
-  )
+  );
 }

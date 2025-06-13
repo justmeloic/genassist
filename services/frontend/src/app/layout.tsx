@@ -12,7 +12,7 @@ export default function EditorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const handleToggle = () => {
     setIsCollapsed(!isCollapsed);

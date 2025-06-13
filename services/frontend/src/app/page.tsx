@@ -14,11 +14,17 @@ export default function LandingPage() {
       </div>
       <main className="flex-1 flex flex-col items-center w-full relative">
         <div className="flex flex-col items-center justify-center h-[400px] space-y-10">
-          <h1 className="text-center text-5xl font-bold">
+          <h1 className="text-center text-4xl font-bold">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Document Editor
+              AI Productivity System
             </span>
           </h1>
+
+          <h3 className="text-center text-sm font-bold w-[450px] max-w-full px-4">
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Discover our suite of AI-powered productivity tools
+            </span>
+          </h3>
           <div className="flex flex-wrap items-center gap-4 mt-8 justify-center px-4">
             <div className="flex items-center px-6 py-3 bg-white dark:bg-gray-800 rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
               <div className="w-10 h-10 flex items-center justify-center mx-2">
@@ -54,12 +60,6 @@ export default function LandingPage() {
           >
             Open Editor
           </Link>
-
-          <h3 className="text-center text-sm font-bold w-[450px] max-w-full px-4">
-            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Edit documents with AI suggestions and visual diff approval
-            </span>
-          </h3>
         </div>
       </main>
     </div>

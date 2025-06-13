@@ -1,9 +1,9 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Loader2, SendHorizontal } from "lucide-react";
+import Image from "next/image";
 
 interface LlmPromptProps {
   onSubmit: (prompt: string) => void;
@@ -35,52 +35,48 @@ export default function LlmPrompt({
   ];
 
   return (
-    <div className="bg-card rounded-3xl  border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-2xl transition-shadow duration-300 ease-in-out">
+    <div className="bg-card rounded-3xl border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-shadow duration-300 ease-in-out">
       <div className="p-6 border-border">
         <h2 className="text-xl opacity-65 text-card-foreground flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          AI Suggestions
+          <Image
+            src="/logo-avatar-icon.png"
+            alt="Logo"
+            width={25}
+            height={25}
+            className="object-contain"
+          />
+          AI Edit Suggestions
         </h2>
       </div>
 
       <div className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
+          <div className="relative">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe how you'd like to improve the document..."
-              className="w-full h-24 p-4 bg-background border border-input rounded-2xl resize-none disabled:bg-muted text-foreground placeholder:text-muted-foreground transition-all duration-300"
+              className="w-full h-24 p-4 pb-12 bg-background border border-input rounded-2xl resize-none outline-none focus:shadow-[0_0_0_3px_rgba(59,130,246,0.3)] disabled:bg-muted text-foreground/65 placeholder:text-muted-foreground transition-all duration-300"
               disabled={isLoading || disabled}
             />
-          </div>
-
-          <button
-            type="submit"
-            disabled={!prompt.trim() || isLoading || disabled}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Getting AI Suggestions...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Get AI Suggestions
-              </>
+            {prompt.trim() && (
+              <button
+                type="submit"
+                disabled={isLoading || disabled}
+                className="absolute bottom-4 right-4 flex items-center justify-center w-7 h-7 bg-gradient-to-r from-purple-600/60 to-pink-600/60 hover:from-purple-700 hover:to-pink-700 text-white rounded-full font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <SendHorizontal className="w-4 h-4" />
+                )}
+              </button>
             )}
-          </button>
+          </div>
         </form>
 
         <div className="mt-6">
-          <p className="text-sm text-muted-foreground mb-3 font-medium">
-            Quick suggestions:
-          </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 justify-center">
             {suggestedPrompts.map((suggestion, index) => (
               <button
                 key={index}
