@@ -2,24 +2,17 @@
 
 import "../styles/globals.css";
 import type React from "react";
-import { useState } from "react";
 import { Header } from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ClientLayout } from "./client-layout";
 
-export default function EditorLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-
-  const handleToggle = () => {
-    setIsCollapsed(!isCollapsed);
-  };
-
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ThemeProvider
           attribute="class"
@@ -27,15 +20,7 @@ export default function EditorLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen bg-background">
-            <Header />
-            <div className="flex">
-              <Sidebar isCollapsed={isCollapsed} onToggle={handleToggle} />
-              <main className="flex-1 transition-all duration-300">
-                {children}
-              </main>
-            </div>
-          </div>
+          <ClientLayout>{children}</ClientLayout>
         </ThemeProvider>
       </body>
     </html>
