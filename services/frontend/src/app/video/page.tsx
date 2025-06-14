@@ -11,6 +11,7 @@ export default function VideoPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const suggestedPrompts = [
     "A serene mountain landscape with flowing waterfalls",
@@ -27,6 +28,7 @@ export default function VideoPage() {
     setIsLoading(true);
     setShowGenerator(true);
     setGeneratingVideo(true);
+    setError(null); // Clear any previous errors
 
     try {
       const response = await generateVideo({
@@ -37,7 +39,13 @@ export default function VideoPage() {
       setGeneratingVideo(false);
     } catch (error) {
       console.error("Error generating video:", error);
-      alert("Failed to generate video. Please try again.");
+      
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred. Please try again.");
+      }
+
       setShowGenerator(false);
     } finally {
       setIsLoading(false);
@@ -79,6 +87,13 @@ export default function VideoPage() {
             </div>
 
             <div className="p-6 space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="p-4 mb-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-800">
+                  <p>{error}</p>
+                </div>
+              )}
+              
               {/* Form First */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="relative">
