@@ -35,3 +35,9 @@ pids
 *.swp
 *.swo
 *~
+
+# Output Directories
+*_outputs/
+audio_outputs/
+video_outputs/
+document_outputs/

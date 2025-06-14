@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     # Video Configuration
     VIDEO_OUTPUT_DIR: str = "video_outputs"
     VIDEO_ASPECT_RATIO: str = "16:9"
-    VIDEO_PERSON_GENERATION: str = "dont_allow"
+    VIDEO_PERSON_GENERATION: str = "allow_adult"
 
     # Default Speakers Configuration
     DEFAULT_SPEAKERS: List[Dict[str, str]] = [

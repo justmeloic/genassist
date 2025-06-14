@@ -3,7 +3,7 @@
 import type * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Home } from "lucide-react";
+import { FileText, Home, Video } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -37,6 +37,12 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       icon: FileText,
       variant: "default",
       href: "/editor",
+    },
+    {
+      title: "Video Generator",
+      icon: Video,
+      variant: "default",
+      href: "/video",
     },
   ] as const;
 
