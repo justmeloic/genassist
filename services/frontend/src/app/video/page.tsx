@@ -64,11 +64,10 @@ export default function VideoPage() {
         </div>
 
         <div
-          className={`grid grid-cols-1 lg:grid-cols-2 gap-8 ${
-            !showGenerator ? "lg:grid-cols-1 max-w-2xl mx-auto" : ""
+          className={`grid grid-cols-1 gap-8 ${
+            showGenerator ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"
           }`}
         >
-          {/* Prompt Input */}
           <div className="bg-card rounded-3xl dark:border dark:shadow-none border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
             <div className="p-6 border-border">
               <h2 className="text-xl opacity-65 text-card-foreground flex items-center gap-3">
