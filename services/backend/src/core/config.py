@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     GEMINI_MODEL_DOCUMENT: str = "gemini-2.0-flash"
     GEMINI_MODEL_TTS: str = "gemini-2.5-flash-preview-tts"
     GEMINI_MODEL_MULTI_TTS: str = "gemini-2.5-flash-preview-tts"
+    GEMINI_MODEL_VIDEO: str = "veo-2.0-generate-001"
 
     # API Configuration
     API_V1_STR: str = "/v1/api"
@@ -44,8 +45,13 @@ class Settings(BaseSettings):
 
     # File Configuration
     UPLOAD_DIR: str = "uploads"
-    OUTPUT_DIR: str = "outputs"
+    OUTPUT_DIR: str = "audio_outputs"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+
+    # Video Configuration
+    VIDEO_OUTPUT_DIR: str = "video_outputs"
+    VIDEO_ASPECT_RATIO: str = "16:9"
+    VIDEO_PERSON_GENERATION: str = "dont_allow"
 
     # Default Speakers Configuration
     DEFAULT_SPEAKERS: List[Dict[str, str]] = [

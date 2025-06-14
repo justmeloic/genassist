@@ -12,7 +12,7 @@ setup_logging()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="FastAPI service for document editing and text-to-speech using Gemini AI",
+    description="FastAPI service for document editing, text-to-speech, and text-to-video using Gemini AI",
     version=settings.VERSION,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -28,13 +28,17 @@ app.add_middleware(
 )
 
 # Include API router
-app.include_router(api_router, prefix="/v1/api")
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
 async def root():
     """Root endpoint for health check."""
-    return {"message": "Document Service API is running", "version": settings.VERSION}
+    return {
+        "message": "Document Service API is running",
+        "version": settings.VERSION,
+        "services": ["document", "text-to-speech", "text-to-video"],
+    }
 
 
 @app.get("/health")
