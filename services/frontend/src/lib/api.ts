@@ -85,28 +85,27 @@ export async function generateVideo(request: TextToVideoRequest): Promise<TextTo
     body: JSON.stringify(request),
   });
 
-  const data = await response.json().catch(() => null);
-
+  // Handle error responses (any status code that is not 2xx)
   if (!response.ok) {
-    // Check if we have a rate limit error (429)
-    if (response.status === 429) {
-      throw new Error('Rate limit exceeded. Please try again in a few minutes.');
+    // Try to parse the error response body to get the `detail` message
+    const errorData = await response.json().catch(() => null);
+
+    // If the backend sent a `detail` field (FastAPI default), use it as the error message.
+    if (errorData?.detail) {
+      throw new Error(errorData.detail);
     }
     
-    // If we have an error message from the server, use it
-    if (data?.message) {
-      throw new Error(data.message);
-    }
-    
-    // Otherwise use a generic error with the status code
-    throw new Error(`Failed to generate video (${response.status})`);
+    // As a fallback, use the HTTP status text.
+    throw new Error(`Request failed with status: ${response.status} ${response.statusText}`);
   }
 
-  if (!data) {
+  // If the response was successful, parse the JSON body
+  const successData = await response.json();
+  if (!successData) {
     throw new Error('Invalid response from server');
   }
 
-  return data;
+  return successData;
 }
 
 export function getAudioUrl(fileId: string): string {
