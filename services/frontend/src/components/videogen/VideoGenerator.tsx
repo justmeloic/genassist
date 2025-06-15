@@ -17,6 +17,16 @@ interface VideoGeneratorProps {
   onRetry: () => void;
 }
 
+interface VideoGeneratorState {
+  videoUrl: string | null;
+  isPlaying: boolean;
+  progress: number;
+  currentTime: number;
+  duration: number;
+  isVideoReady: boolean;
+  status: "loading" | "ready";
+}
+
 export default function VideoGenerator({
   prompt,
   isGenerating,
@@ -28,6 +38,7 @@ export default function VideoGenerator({
   onClose,
   onRetry,
 }: VideoGeneratorProps) {
+  // Initialize state
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -36,6 +47,56 @@ export default function VideoGenerator({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready">("loading");
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Load saved state on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem("video-generator-state");
+
+    if (savedState && videoResponse) {
+      try {
+        const parsedState: VideoGeneratorState = JSON.parse(savedState);
+        setVideoUrl(parsedState.videoUrl);
+        setIsPlaying(false); // Always start paused
+        setProgress(parsedState.progress);
+        setCurrentTime(parsedState.currentTime);
+        setDuration(parsedState.duration);
+        setIsVideoReady(parsedState.isVideoReady);
+        setStatus(parsedState.status);
+      } catch (error) {
+        console.error("Error parsing saved video generator state:", error);
+      }
+    }
+  }, [videoResponse]);
+
+  // Save state changes
+  useEffect(() => {
+    if (videoUrl) {
+      const state: VideoGeneratorState = {
+        videoUrl,
+        isPlaying,
+        progress,
+        currentTime,
+        duration,
+        isVideoReady,
+        status,
+      };
+      localStorage.setItem("video-generator-state", JSON.stringify(state));
+    }
+  }, [
+    videoUrl,
+    isPlaying,
+    progress,
+    currentTime,
+    duration,
+    isVideoReady,
+    status,
+  ]);
+
+  // Clear state on close
+  const handleClose = () => {
+    localStorage.removeItem("video-generator-state");
+    onClose();
+  };
 
   // Set video URL when response changes
   useEffect(() => {
@@ -99,7 +160,7 @@ export default function VideoGenerator({
     <div className="bg-card rounded-3xl dark:border dark:shadow-none border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
       <div className="flex items-center justify-between p-6 border-border">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
         >
           <X className="w-4 h-4" />
@@ -118,12 +179,12 @@ export default function VideoGenerator({
 
             <div className="text-center space-y-2">
               <h3 className="font-medium text-card-foreground">
-                {isRetrying ? 'Retrying Generation' : 'Generating Video'}
+                {isRetrying ? "Retrying Generation" : "Generating Video"}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {isRetrying 
+                {isRetrying
                   ? `Attempt ${retryCount} of ${maxRetries}...`
-                  : 'Please wait while we process your request...'}
+                  : "Please wait while we process your request..."}
               </p>
             </div>
 

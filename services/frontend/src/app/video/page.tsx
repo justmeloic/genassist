@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateVideo } from "@/lib/api";
 import type { TextToVideoResponse } from "@/lib/api";
 import { Loader2, Video, SendHorizontal } from "lucide-react";
@@ -9,7 +9,19 @@ import VideoGenerator from "@/components/videogen/VideoGenerator";
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds
 
+interface VideoPageState {
+  prompt: string;
+  isLoading: boolean;
+  showGenerator: boolean;
+  generatingVideo: boolean;
+  error: string | null;
+  videoResponse: TextToVideoResponse | null;
+  retryCount: number;
+  isRetrying: boolean;
+}
+
 export default function VideoPage() {
+  // Initialize state with localStorage values or defaults
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
@@ -107,6 +119,69 @@ export default function VideoPage() {
     setPrompt(suggestion);
   };
 
+  // Load saved state on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem("video-page-state");
+
+    if (savedState) {
+      try {
+        const parsedState: VideoPageState = JSON.parse(savedState);
+        // Always show generator if we have a video response
+        const shouldShowGenerator = parsedState.videoResponse !== null;
+
+        setPrompt(parsedState.prompt || "");
+        setShowGenerator(shouldShowGenerator);
+        setVideoResponse(parsedState.videoResponse);
+        setError(parsedState.error);
+        // Reset loading states
+        setIsLoading(false);
+        setGeneratingVideo(false);
+        setIsRetrying(false);
+        setRetryCount(0);
+      } catch (error) {
+        console.error("Error parsing saved video page state:", error);
+        initializeDefaultState();
+      }
+    }
+  }, []);
+
+  // Save state changes to localStorage - update dependencies
+  useEffect(() => {
+    if (prompt || videoResponse) {
+      const state: VideoPageState = {
+        prompt,
+        isLoading: false, // Don't persist loading state
+        showGenerator: Boolean(videoResponse), // Always true if we have a response
+        generatingVideo: false, // Don't persist generating state
+        error,
+        videoResponse,
+        retryCount: 0,
+        isRetrying: false,
+      };
+      localStorage.setItem("video-page-state", JSON.stringify(state));
+    }
+  }, [prompt, videoResponse, error]);
+
+  // Initialize default state
+  const initializeDefaultState = () => {
+    setPrompt("");
+    setShowGenerator(false);
+    setVideoResponse(null);
+    setError(null);
+    setIsLoading(false);
+    setGeneratingVideo(false);
+    setIsRetrying(false);
+    setRetryCount(0);
+    localStorage.removeItem("video-page-state");
+  };
+
+  // Update handleClose to not hide generator if we have a video
+  const handleClose = () => {
+    if (!videoResponse) {
+      setShowGenerator(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -126,9 +201,10 @@ export default function VideoPage() {
 
         <div
           className={`grid grid-cols-1 gap-8 ${
-            showGenerator ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"
+            videoResponse ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"
           }`}
         >
+          {/* Prompt Form */}
           <div className="bg-card rounded-3xl dark:border dark:shadow-none border-border overflow-hidden shadow-card-normal hover:shadow-card-hover transition-shadow duration-300 ease-in-out">
             <div className="p-6 border-border">
               <h2 className="text-xl opacity-65 text-card-foreground flex items-center gap-3">
@@ -192,8 +268,8 @@ export default function VideoPage() {
             </div>
           </div>
 
-          {/* Video Generator */}
-          {showGenerator && (
+          {/* Video Generator - show if we have a response */}
+          {videoResponse && (
             <div className="transition-all duration-700 ease-in-out opacity-100 translate-x-0">
               <VideoGenerator
                 prompt={prompt}
@@ -203,7 +279,7 @@ export default function VideoPage() {
                 maxRetries={MAX_RETRIES}
                 error={error}
                 videoResponse={videoResponse}
-                onClose={() => setShowGenerator(false)}
+                onClose={handleClose}
                 onRetry={handleRetry}
               />
             </div>
