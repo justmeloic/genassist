@@ -50,6 +50,9 @@ export default function DocumentEditor() {
     "idle" | "generating" | "loading" | "ready"
   >("idle");
 
+  // Add error state
+  const [error, setError] = useState<string | null>(null);
+
   // Load all saved state on component mount
   useEffect(() => {
     // Try to load the complete editor state
@@ -181,7 +184,16 @@ export default function DocumentEditor() {
 
   const handleLlmSuggestion = async (prompt: string) => {
     setIsLoading(true);
+    setError(null); // Clear any previous errors
+
     try {
+      // Check for empty content
+      if (!originalContent.trim()) {
+        throw new Error(
+          "Cannot generate suggestions for empty content. Please add some text first."
+        );
+      }
+
       const response = await editDocument({
         content: originalContent,
         instructions: prompt,
@@ -196,11 +208,13 @@ export default function DocumentEditor() {
         setShowDiff(true);
         setEditMode("llm");
       } else {
-        throw new Error("Failed to get AI suggestion");
+        throw new Error("Failed to generate AI suggestion. Please try again.");
       }
     } catch (error) {
       console.error("Error getting AI suggestion:", error);
-      alert("Failed to get AI suggestion. Please try again.");
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -307,6 +321,13 @@ export default function DocumentEditor() {
             </span>
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-4 mb-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-800">
+            <p>{error}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Editor Section */}
