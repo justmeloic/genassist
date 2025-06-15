@@ -6,6 +6,7 @@ import {
   Sparkles,
   Headphones,
   Video,
+  Box,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -67,6 +68,14 @@ export default function LandingPage() {
                 Video Generation
               </span>
             </div>
+            <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
+              <div className="w-10 h-10 flex items-center justify-center mx-2">
+                <Box className="w-6 h-6 text-red-500" />
+              </div>
+              <span className="text-base opacity-65 text-gray-800 dark:text-gray-200">
+                3D Model Generation
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-4">
@@ -78,9 +87,15 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/video"
-              className="mt-8 px-8 py-3 bg-gradient-to-r from-purple-500 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              className="mt-8 px-8 py-3 bg-gradient-to-r from-pink-500 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
               Open VideoGen
+            </Link>
+            <Link
+              href="/3dmodel"
+              className="mt-8 px-8 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Open 3DGen
             </Link>
           </div>
         </div>

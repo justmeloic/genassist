@@ -3,7 +3,7 @@
 import type * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Home, Video } from "lucide-react";
+import { FileText, Home, Video, Box } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -44,6 +44,12 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       variant: "default",
       href: "/video",
     },
+    {
+      title: "3D Model Viewer",
+      icon: Box,
+      variant: "default",
+      href: "/3dmodel",
+    },
   ] as const;
 
   const renderLink = (link: typeof homeLink, index?: number) => {
@@ -63,7 +69,10 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
             <span className="sr-only">{link.title}</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="right" className="flex items-center gap-4 text-xs">
+        <TooltipContent
+          side="right"
+          className="flex items-center gap-4 text-xs"
+        >
           {link.title}
         </TooltipContent>
       </Tooltip>
