@@ -4,7 +4,7 @@ import { useState } from "react";
 import { generateVideo } from "@/lib/api";
 import type { TextToVideoResponse } from "@/lib/api";
 import { Loader2, Video, SendHorizontal } from "lucide-react";
-import VideoGenerator from "@/components/VideoGenerator";
+import VideoGenerator from "@/components/videogen/VideoGenerator";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000; // 2 seconds

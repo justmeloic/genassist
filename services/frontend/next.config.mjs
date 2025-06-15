@@ -14,7 +14,11 @@ const nextConfig = {
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
   },
-  output: 'export',
+
+  // output: 'export',  Loïc: I removed static export because 
+  // src/app/api/download and src/app/api/proxy-download are dynamic and you
+  // cannot "statically export" an API route that is inherently 
+  // dynamic. 
 }
 
 export default nextConfig

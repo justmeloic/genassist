@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { diffChars } from "diff";
-import Editor from "@/components/Editor";
-import DiffViewer from "@/components/DiffViewer";
-import LlmPrompt from "@/components/LlmPrompt";
-import AudioGenerator from "@/components/AudioGenerator";
-import SpeakerModeDialog from "@/components/SpeakerModeDialog";
+import Editor from "@/components/docgen/Editor";
+import DiffViewer from "@/components/docgen/DiffViewer";
+import LlmPrompt from "@/components/docgen/LlmPrompt";
+import AudioGenerator from "@/components/docgen/AudioGenerator";
+import SpeakerModeDialog from "@/components/docgen/SpeakerModeDialog";
 import { editDocument } from "@/lib/api";
 
 export default function DocumentEditor() {
