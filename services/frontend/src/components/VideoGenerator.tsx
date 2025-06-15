@@ -1,102 +1,48 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import {
-  X,
-  Download,
-  Play,
-  Pause,
-  Video,
-  Loader2,
-  Headphones,
-} from "lucide-react";
-import { generateVideo, getVideoUrl } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { X, Download, Loader2 } from "lucide-react";
 import type { TextToVideoResponse } from "@/lib/api";
+import { getVideoUrl } from "@/lib/api";
 
 interface VideoGeneratorProps {
   prompt: string;
   isGenerating: boolean;
+  isRetrying: boolean;
+  retryCount: number;
+  maxRetries: number;
+  error: string | null;
+  videoResponse: TextToVideoResponse | null;
   onClose: () => void;
+  onRetry: () => void;
 }
 
 export default function VideoGenerator({
   prompt,
   isGenerating,
+  isRetrying,
+  retryCount,
+  maxRetries,
+  error,
+  videoResponse,
   onClose,
+  onRetry,
 }: VideoGeneratorProps) {
-  // Add retry counter
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
-
-  const [isLoading, setIsLoading] = useState(true);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [videoResponse, setVideoResponse] =
-    useState<TextToVideoResponse | null>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
-  const [status, setStatus] = useState<
-    "idle" | "generating" | "loading" | "ready"
-  >("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready">("loading");
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Generate video when component mounts
+  // Set video URL when response changes
   useEffect(() => {
-    const generateVideoContent = async () => {
-      try {
-        setStatus("generating");
-        setError(null);
-
-        const response = await generateVideo({
-          prompt: prompt,
-          aspect_ratio: "16:9",
-          person_generation: "allow_adult",
-        });
-
-        setVideoResponse(response);
-        setVideoUrl(getVideoUrl(response.file_path));
-        setStatus("loading");
-        setIsLoading(false);
-        setRetryCount(0); // Reset retry count on success
-      } catch (error) {
-        console.error("Error generating video:", error);
-
-        // Handle rate limit errors with retry
-        if (
-          error instanceof Error &&
-          error.message.includes("Rate limit") &&
-          retryCount < MAX_RETRIES
-        ) {
-          setRetryCount((prev) => prev + 1);
-          setError(
-            `Rate limit reached. Retrying in 5 seconds... (Attempt ${
-              retryCount + 1
-            }/${MAX_RETRIES})`
-          );
-
-          // Wait 5 seconds before retrying
-          setTimeout(() => {
-            generateVideoContent();
-          }, 5000);
-          return;
-        }
-
-        // Set error message
-        setError(
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred"
-        );
-        setIsLoading(false);
-        setStatus("idle");
-      }
-    };
-
-    generateVideoContent();
-  }, [prompt, retryCount]); // Add retryCount as dependency
+    if (videoResponse?.file_path) {
+      setVideoUrl(getVideoUrl(videoResponse.file_path));
+    }
+  }, [videoResponse]);
 
   // Video event listeners
   useEffect(() => {
@@ -131,17 +77,6 @@ export default function VideoGenerator({
       video.removeEventListener("ended", handleEnded);
     };
   }, [videoUrl]);
-
-  const handlePlayPause = () => {
-    if (!videoRef.current || !isVideoReady) return;
-
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
 
   const handleDownload = () => {
     if (videoUrl) {
@@ -183,10 +118,12 @@ export default function VideoGenerator({
 
             <div className="text-center space-y-2">
               <h3 className="font-medium text-card-foreground">
-                Generating Video
+                {isRetrying ? 'Retrying Generation' : 'Generating Video'}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Please wait while we process your request...
+                {isRetrying 
+                  ? `Attempt ${retryCount} of ${maxRetries}...`
+                  : 'Please wait while we process your request...'}
               </p>
             </div>
 
@@ -205,14 +142,10 @@ export default function VideoGenerator({
               <div className="font-medium mb-1">Error Generating Video</div>
               <div className="text-sm">{error}</div>
             </div>
-            {retryCount < MAX_RETRIES && (
+            {retryCount < maxRetries && (
               <div className="flex justify-center">
                 <button
-                  onClick={() => {
-                    setStatus("idle");
-                    setError(null);
-                    setRetryCount((prev) => prev + 1);
-                  }}
+                  onClick={onRetry}
                   className="px-8 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-700 dark:text-red-300 rounded-full font-medium transition-colors"
                 >
                   Try Again

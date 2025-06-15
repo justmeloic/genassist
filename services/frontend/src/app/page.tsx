@@ -1,6 +1,12 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, FileText, Sparkles, Headphones } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  Sparkles,
+  Headphones,
+  Video,
+} from "lucide-react";
 
 export default function LandingPage() {
   return (
@@ -31,10 +37,10 @@ export default function LandingPage() {
                 <FileText className="w-6 h-6 text-blue-500" />
               </div>
               <span className="text-base opacity-65 text-gray-800 dark:text-gray-200">
-                Document
+                Document Generation
               </span>
             </div>
-            <ArrowRight className="text-gray-400" />
+
             <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
               <div className="w-10 h-10 flex items-center justify-center mx-2">
                 <Sparkles className="w-6 h-6 text-purple-500" />
@@ -43,7 +49,7 @@ export default function LandingPage() {
                 AI Enhancement
               </span>
             </div>
-            <ArrowRight className="text-gray-400" />
+
             <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
               <div className="w-10 h-10 flex items-center justify-center mx-2">
                 <Headphones className="w-6 h-6 text-pink-500" />
@@ -52,14 +58,31 @@ export default function LandingPage() {
                 Audio Generation
               </span>
             </div>
+
+            <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
+              <div className="w-10 h-10 flex items-center justify-center mx-2">
+                <Video className="w-6 h-6 text-green-500" />
+              </div>
+              <span className="text-base opacity-65 text-gray-800 dark:text-gray-200">
+                Video Generation
+              </span>
+            </div>
           </div>
 
-          <Link
-            href="/editor"
-            className="mt-8 px-8 py-3 bg-gradient-to-r from-blue-500 to-pink-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
-          >
-            Open Editor
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href="/editor"
+              className="mt-8 px-8 py-3 bg-gradient-to-r from-blue-500 to-pink-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Open DocGen
+            </Link>
+            <Link
+              href="/video"
+              className="mt-8 px-8 py-3 bg-gradient-to-r from-purple-500 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Open VideoGen
+            </Link>
+          </div>
         </div>
       </main>
     </div>

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { generateVideo } from "@/lib/api";
 import type { TextToVideoResponse } from "@/lib/api";
-import { Loader2, Video, Sparkles, SendHorizontal } from "lucide-react";
+import { Loader2, Video, SendHorizontal } from "lucide-react";
 import VideoGenerator from "@/components/VideoGenerator";
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000; // 2 seconds
 
 export default function VideoPage() {
   const [prompt, setPrompt] = useState("");
@@ -12,6 +15,10 @@ export default function VideoPage() {
   const [showGenerator, setShowGenerator] = useState(false);
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [videoResponse, setVideoResponse] =
+    useState<TextToVideoResponse | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const suggestedPrompts = [
     "A serene mountain landscape with flowing waterfalls",
@@ -21,6 +28,30 @@ export default function VideoPage() {
     "A professional product showcase animation",
   ];
 
+  const generateVideoWithRetry = async (
+    currentRetry: number = 0
+  ): Promise<TextToVideoResponse> => {
+    try {
+      const response = await generateVideo({
+        prompt: prompt.trim(),
+        aspect_ratio: "16:9",
+        person_generation: "allow_adult",
+      });
+      return response;
+    } catch (error) {
+      if (currentRetry < MAX_RETRIES - 1) {
+        setIsRetrying(true);
+        setRetryCount(currentRetry + 1);
+
+        // Wait for RETRY_DELAY before trying again
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+
+        return generateVideoWithRetry(currentRetry + 1);
+      }
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || isLoading) return;
@@ -28,18 +59,18 @@ export default function VideoPage() {
     setIsLoading(true);
     setShowGenerator(true);
     setGeneratingVideo(true);
-    setError(null); // Clear any previous errors
+    setError(null);
+    setVideoResponse(null);
+    setRetryCount(0);
+    setIsRetrying(false);
 
     try {
-      const response = await generateVideo({
-        prompt: prompt.trim(),
-        aspect_ratio: "16:9",
-        person_generation: "allow_adult",
-      });
+      const response = await generateVideoWithRetry();
+      setVideoResponse(response);
       setGeneratingVideo(false);
     } catch (error) {
       console.error("Error generating video:", error);
-      
+
       if (error instanceof Error) {
         setError(error.message);
       } else {
@@ -49,6 +80,26 @@ export default function VideoPage() {
       setShowGenerator(false);
     } finally {
       setIsLoading(false);
+      setIsRetrying(false);
+    }
+  };
+
+  const handleRetry = async () => {
+    setError(null);
+    setGeneratingVideo(true);
+    setShowGenerator(true);
+
+    try {
+      const response = await generateVideoWithRetry();
+      setVideoResponse(response);
+      setGeneratingVideo(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("An unknown error occurred. Please try again.");
+      }
+      setShowGenerator(false);
     }
   };
 
@@ -63,11 +114,13 @@ export default function VideoPage() {
         <div className="text-center py-2">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Text to Video
+              VideoGen
             </span>
           </h1>
-          <p className="text-muted-foreground mb-2 text-sm">
-            Generate videos from text descriptions using AI
+          <p className="text-muted-foreground mb-2 text-sm ">
+            <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
+              Generate videos from text descriptions using AI
+            </span>
           </p>
         </div>
 
@@ -93,7 +146,7 @@ export default function VideoPage() {
                   <p>{error}</p>
                 </div>
               )}
-              
+
               {/* Form First */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="relative">
@@ -145,7 +198,13 @@ export default function VideoPage() {
               <VideoGenerator
                 prompt={prompt}
                 isGenerating={generatingVideo}
+                isRetrying={isRetrying}
+                retryCount={retryCount}
+                maxRetries={MAX_RETRIES}
+                error={error}
+                videoResponse={videoResponse}
                 onClose={() => setShowGenerator(false)}
+                onRetry={handleRetry}
               />
             </div>
           )}

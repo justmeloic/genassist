@@ -163,7 +163,7 @@ export default function DocumentEditor() {
         <div className="text-center py-2">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">
             <span className="bg-gradient-to-r from-blue-500 to-pink-500 bg-clip-text text-transparent">
-              Editor
+              DocGen
             </span>
           </h1>
           <p className="text-muted-foreground mb-2 text-sm ">
