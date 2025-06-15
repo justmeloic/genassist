@@ -9,11 +9,29 @@ import AudioGenerator from "@/components/docgen/AudioGenerator";
 import SpeakerModeDialog from "@/components/docgen/SpeakerModeDialog";
 import { editDocument } from "@/lib/api";
 
+const DEFAULT_CONTENT = `Welcome to the Document Editor!\n\nThis is a sample document that you can edit directly or improve using AI suggestions. Try typing in the editor below or use the AI prompt feature to get intelligent suggestions for your content.\n\nThe diff system will show you exactly what changes are being proposed before you accept them.`;
+
+interface EditorState {
+  originalContent: string;
+  proposedContent: string;
+  documentHistory: string[];
+  diffResult: any[];
+  showDiff: boolean;
+  editMode: "direct" | "llm";
+  isReading: boolean;
+  showAudioGenerator: boolean;
+  showSpeakerDialog: boolean;
+  selectedIsMultiSpeaker: boolean;
+  // Add audio state
+  audioResponse: TextToSpeechResponse | null;
+  audioStatus: "idle" | "generating" | "loading" | "ready";
+}
+
 export default function DocumentEditor() {
-  const [originalContent, setOriginalContent] = useState(
-    "Welcome to the Document Editor!\n\nThis is a sample document that you can edit directly or improve using AI suggestions. Try typing in the editor below or use the AI prompt feature to get intelligent suggestions for your content.\n\nThe diff system will show you exactly what changes are being proposed before you accept them."
-  );
-  const [proposedContent, setProposedContent] = useState("");
+  // Initialize state with localStorage values or defaults
+  const [originalContent, setOriginalContent] = useState<string>("");
+  const [proposedContent, setProposedContent] = useState<string>("");
+  const [documentHistory, setDocumentHistory] = useState<string[]>([]);
   const [diffResult, setDiffResult] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
@@ -21,21 +39,131 @@ export default function DocumentEditor() {
   const [showSpeakerDialog, setShowSpeakerDialog] = useState(false);
   const [selectedIsMultiSpeaker, setSelectedIsMultiSpeaker] = useState(false);
   const [editMode, setEditMode] = useState<"direct" | "llm">("direct");
-  const [documentHistory, setDocumentHistory] = useState<string[]>([
-    originalContent,
-  ]);
   const [isReading, setIsReading] = useState(false);
   const [speechSynthesis, setSpeechSynthesis] =
     useState<SpeechSynthesis | null>(null);
 
+  // Add new state for audio persistence
+  const [audioResponse, setAudioResponse] =
+    useState<TextToSpeechResponse | null>(null);
+  const [audioStatus, setAudioStatus] = useState<
+    "idle" | "generating" | "loading" | "ready"
+  >("idle");
+
+  // Load all saved state on component mount
   useEffect(() => {
+    // Try to load the complete editor state
+    const savedEditorState = localStorage.getItem("editor-state");
+
+    if (savedEditorState) {
+      try {
+        const parsedState: EditorState = JSON.parse(savedEditorState);
+        setOriginalContent(parsedState.originalContent || DEFAULT_CONTENT);
+        setProposedContent(parsedState.proposedContent || "");
+        setDocumentHistory(parsedState.documentHistory || [DEFAULT_CONTENT]);
+        setDiffResult(parsedState.diffResult || []);
+        setShowDiff(parsedState.showDiff || false);
+        setEditMode(parsedState.editMode || "direct");
+        setIsReading(parsedState.isReading || false);
+        setShowAudioGenerator(parsedState.showAudioGenerator || false);
+        setShowSpeakerDialog(parsedState.showSpeakerDialog || false);
+        setSelectedIsMultiSpeaker(parsedState.selectedIsMultiSpeaker || false);
+        setAudioResponse(parsedState.audioResponse || null);
+        setAudioStatus(parsedState.audioStatus || "idle");
+      } catch (error) {
+        console.error("Error parsing saved editor state:", error);
+        initializeDefaultState();
+      }
+    } else {
+      initializeDefaultState();
+    }
+
+    // Initialize speech synthesis
     if (typeof window !== "undefined") {
       setSpeechSynthesis(window.speechSynthesis);
     }
   }, []);
 
+  // Save state to localStorage whenever any relevant state changes
+  useEffect(() => {
+    // Only save if we have content to save
+    if (originalContent || proposedContent) {
+      const editorState: EditorState = {
+        originalContent,
+        proposedContent,
+        documentHistory,
+        diffResult,
+        showDiff,
+        editMode,
+        isReading,
+        showAudioGenerator,
+        showSpeakerDialog,
+        selectedIsMultiSpeaker,
+        audioResponse,
+        audioStatus,
+      };
+      localStorage.setItem("editor-state", JSON.stringify(editorState));
+    }
+  }, [
+    originalContent,
+    proposedContent,
+    documentHistory,
+    diffResult,
+    showDiff,
+    editMode,
+    isReading,
+    showAudioGenerator,
+    showSpeakerDialog,
+    selectedIsMultiSpeaker,
+    audioResponse,
+    audioStatus,
+  ]);
+
+  // Helper function to initialize default state
+  const initializeDefaultState = () => {
+    setOriginalContent(DEFAULT_CONTENT);
+    setProposedContent("");
+    setDocumentHistory([DEFAULT_CONTENT]);
+    setDiffResult([]);
+    setShowDiff(false);
+    setEditMode("direct");
+
+    // Save default state to localStorage
+    const defaultState: EditorState = {
+      originalContent: DEFAULT_CONTENT,
+      proposedContent: "",
+      documentHistory: [DEFAULT_CONTENT],
+      diffResult: [],
+      showDiff: false,
+      editMode: "direct",
+      isReading: false,
+      showAudioGenerator: false,
+      showSpeakerDialog: false,
+      selectedIsMultiSpeaker: false,
+      audioResponse: null,
+      audioStatus: "idle",
+    };
+    localStorage.setItem("editor-state", JSON.stringify(defaultState));
+  };
+
   const handleDirectEdit = (newContent: string) => {
     setProposedContent(newContent);
+    // Immediately save to localStorage
+    const currentState: EditorState = {
+      originalContent,
+      proposedContent: newContent,
+      documentHistory,
+      diffResult,
+      showDiff,
+      editMode,
+      isReading,
+      showAudioGenerator,
+      showSpeakerDialog,
+      selectedIsMultiSpeaker,
+      audioResponse: null,
+      audioStatus: "idle",
+    };
+    localStorage.setItem("editor-state", JSON.stringify(currentState));
   };
 
   const handlePreviewChanges = () => {
@@ -79,8 +207,9 @@ export default function DocumentEditor() {
   };
 
   const handleAcceptChanges = () => {
-    setOriginalContent(proposedContent);
-    setDocumentHistory((prev) => [...prev, proposedContent]);
+    const newContent = proposedContent;
+    setOriginalContent(newContent);
+    setDocumentHistory((prev) => [...prev, newContent]);
     setProposedContent("");
     setDiffResult([]);
     setShowDiff(false);
@@ -156,6 +285,12 @@ export default function DocumentEditor() {
     setShowAudioGenerator(false);
   };
 
+  // Clear persistence function (optional, for reset functionality)
+  const clearEditorState = () => {
+    localStorage.removeItem("editor-state");
+    initializeDefaultState();
+  };
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -212,6 +347,10 @@ export default function DocumentEditor() {
                   content={proposedContent || originalContent}
                   isMultiSpeaker={selectedIsMultiSpeaker}
                   onClose={handleCloseAudioGenerator}
+                  savedAudioResponse={audioResponse}
+                  onAudioResponseChange={setAudioResponse}
+                  savedStatus={audioStatus}
+                  onStatusChange={setAudioStatus}
                 />
               )}
             </div>

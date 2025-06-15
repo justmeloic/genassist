@@ -9,12 +9,23 @@ interface AudioGeneratorProps {
   content: string;
   isMultiSpeaker: boolean;
   onClose: () => void;
+  // Add new props for persistence
+  savedAudioResponse?: TextToSpeechResponse | null;
+  onAudioResponseChange?: (response: TextToSpeechResponse | null) => void;
+  savedStatus?: "idle" | "generating" | "loading" | "ready";
+  onStatusChange?: (
+    status: "idle" | "generating" | "loading" | "ready"
+  ) => void;
 }
 
 export default function AudioGenerator({
   content,
   isMultiSpeaker,
   onClose,
+  savedAudioResponse,
+  onAudioResponseChange,
+  savedStatus,
+  onStatusChange,
 }: AudioGeneratorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -23,18 +34,42 @@ export default function AudioGenerator({
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [audioResponse, setAudioResponse] =
-    useState<TextToSpeechResponse | null>(null);
+    useState<TextToSpeechResponse | null>(savedAudioResponse || null);
   const [isAudioReady, setIsAudioReady] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "generating" | "loading" | "ready"
-  >("idle");
+  >(savedStatus || "idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Generate audio only when component mounts
+  // Update status handler
+  const updateStatus = (
+    newStatus: "idle" | "generating" | "loading" | "ready"
+  ) => {
+    setStatus(newStatus);
+    onStatusChange?.(newStatus);
+  };
+
+  // Update audio response handler
+  const updateAudioResponse = (response: TextToSpeechResponse | null) => {
+    setAudioResponse(response);
+    onAudioResponseChange?.(response);
+  };
+
+  // Generate audio only when needed
   useEffect(() => {
     const generateAudio = async () => {
+      // Skip generation if we already have a saved response
+      if (savedAudioResponse) {
+        updateAudioResponse(savedAudioResponse);
+        setAudioUrl(getAudioUrl(savedAudioResponse.audio_file_id));
+        setDuration(savedAudioResponse.duration_seconds);
+        updateStatus(savedStatus || "loading");
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        setStatus("generating");
+        updateStatus("generating");
         const response = await generateSpeech({
           text: content,
           is_multi_speaker: isMultiSpeaker,
@@ -43,21 +78,21 @@ export default function AudioGenerator({
           pitch: "normal",
         });
 
-        setAudioResponse(response);
+        updateAudioResponse(response);
         setAudioUrl(getAudioUrl(response.audio_file_id));
         setDuration(response.duration_seconds);
-        setStatus("loading");
+        updateStatus("loading");
         setIsLoading(false);
       } catch (error) {
         console.error("Error generating audio:", error);
         alert("Failed to generate audio. Please try again.");
         setIsLoading(false);
-        setStatus("idle");
+        updateStatus("idle");
       }
     };
 
     generateAudio();
-  }, []); // Remove content and isMultiSpeaker from dependencies array
+  }, [savedAudioResponse]); // Only run if savedAudioResponse changes
 
   // Update handlePlayPause to use actual audio element
   const handlePlayPause = async () => {
