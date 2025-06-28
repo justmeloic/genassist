@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 from loguru import logger
 
-from app.core.config import settings
+from src.app.core.config import settings
 
 
 class InterceptHandler(logging.Handler):

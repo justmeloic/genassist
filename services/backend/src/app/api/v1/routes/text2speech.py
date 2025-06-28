@@ -7,13 +7,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from loguru import logger
 
-from app.core.config import settings
-from app.schemas.text2speech import (
+from src.app.core.config import settings
+from src.app.schemas.text2speech import (
     Text2SpeechRequest,
     Text2SpeechResponse,
 )
-from app.services.text2speech_service import Text2SpeechService
-from app.utils.dependencies import get_text2speech_service
+from src.app.services.text2speech_service import Text2SpeechService
+from src.app.utils.dependencies import get_text2speech_service
 
 router = APIRouter()
 

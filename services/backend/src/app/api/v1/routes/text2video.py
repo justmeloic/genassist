@@ -8,8 +8,8 @@ from fastapi.responses import FileResponse
 # Import the specific exceptions from the Google library
 from google.api_core import exceptions
 
-from app.schemas.text2video import Text2VideoRequest, Text2VideoResponse
-from app.services.text2video_service import Text2VideoService
+from src.app.schemas.text2video import Text2VideoRequest, Text2VideoResponse
+from src.app.services.text2video_service import Text2VideoService
 
 router = APIRouter()
 service = Text2VideoService()

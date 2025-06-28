@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from google import genai
 from google.genai import types
 
-from app.core.config import settings
+from src.app.core.config import settings
 
 
 class Text2VideoService:

@@ -2,8 +2,8 @@
 
 from functools import lru_cache
 
-from app.services.document_edit_service import DocumentEditService
-from app.services.text2speech_service import Text2SpeechService
+from src.app.services.document_edit_service import DocumentEditService
+from src.app.services.text2speech_service import Text2SpeechService
 
 
 @lru_cache()

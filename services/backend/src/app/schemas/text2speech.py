@@ -4,8 +4,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
-from app.core.config import settings
-from app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
+from src.app.core.config import settings
+from src.app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
 
 
 class SpeakerConfig(BaseModel):

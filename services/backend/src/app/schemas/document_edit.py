@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, validator
 
-from app.models.document_edit import DocumentType
+from src.app.models.document_edit import DocumentType
 
 
 class DocumentEditRequest(BaseModel):

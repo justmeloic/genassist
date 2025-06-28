@@ -37,6 +37,7 @@ venv.bak/
 *~
 
 # Project specific
+content/
 outputs/
 uploads/
 logs/

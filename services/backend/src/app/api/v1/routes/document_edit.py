@@ -3,12 +3,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 
-from app.schemas.document_edit import (
+from src.app.schemas.document_edit import (
     DocumentEditRequest,
     DocumentEditResponse,
 )
-from app.services.document_edit_service import DocumentEditService
-from app.utils.dependencies import get_document_edit_service
+from src.app.services.document_edit_service import DocumentEditService
+from src.app.utils.dependencies import get_document_edit_service
 
 router = APIRouter()
 

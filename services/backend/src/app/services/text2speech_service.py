@@ -7,10 +7,10 @@ from google import genai
 from google.genai import types
 from loguru import logger
 
-from app.core.config import settings
-from app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
-from app.schemas.text2speech import SpeakerConfig
-from app.services.gemini_service import GeminiService
+from src.app.core.config import settings
+from src.app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
+from src.app.schemas.text2speech import SpeakerConfig
+from src.app.services.gemini_service import GeminiService
 
 
 class Text2SpeechService:

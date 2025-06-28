@@ -1,9 +1,9 @@
 """Core configuration settings."""
 
 from typing import Dict, List
-from pydantic import BaseModel
+
+from pydantic import BaseModel, validator
 from pydantic_settings import BaseSettings
-from pydantic import validator
 
 
 class SpeakerDefaults(BaseModel):
@@ -45,11 +45,11 @@ class Settings(BaseSettings):
 
     # File Configuration
     UPLOAD_DIR: str = "uploads"
-    OUTPUT_DIR: str = "audio_outputs"
+    OUTPUT_DIR: str = "../content/audio_outputs"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
 
     # Video Configuration
-    VIDEO_OUTPUT_DIR: str = "video_outputs"
+    VIDEO_OUTPUT_DIR: str = "../content/video_outputs"
     VIDEO_ASPECT_RATIO: str = "16:9"
     VIDEO_PERSON_GENERATION: str = "allow_adult"
 
