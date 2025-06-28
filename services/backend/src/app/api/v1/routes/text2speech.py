@@ -56,10 +56,10 @@ async def generate_speech(
         )
 
         # Ensure output directory exists
-        os.makedirs(settings.OUTPUT_DIR, exist_ok=True)
+        os.makedirs(settings.AUDIO_OUTPUT_DIR, exist_ok=True)
 
         # Save audio file
-        file_path = os.path.join(settings.OUTPUT_DIR, filename)
+        file_path = os.path.join(settings.AUDIO_OUTPUT_DIR, filename)
         await service.save_audio_file(audio_data, file_path)
 
         logger.info(f"Speech generation completed successfully: {filename}")
@@ -98,7 +98,7 @@ async def download_audio(file_id: str):
     """
     try:
         filename = f"{file_id}.wav"
-        file_path = os.path.join(settings.OUTPUT_DIR, filename)
+        file_path = os.path.join(settings.AUDIO_OUTPUT_DIR, filename)
 
         if not os.path.exists(file_path):
             raise HTTPException(

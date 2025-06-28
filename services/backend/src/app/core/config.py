@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -44,12 +44,12 @@ class Settings(BaseSettings):
     DEFAULT_VOICE: str = "Kore"
 
     # File Configuration
+    AUDIO_OUTPUT_DIR: str
+    VIDEO_OUTPUT_DIR: str
     UPLOAD_DIR: str = "uploads"
-    OUTPUT_DIR: str = "../content/audio_outputs"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
 
     # Video Configuration
-    VIDEO_OUTPUT_DIR: str = "../content/video_outputs"
     VIDEO_ASPECT_RATIO: str = "16:9"
     VIDEO_PERSON_GENERATION: str = "allow_adult"
 
@@ -59,7 +59,8 @@ class Settings(BaseSettings):
         {"speaker": "Jane", "voice_name": "Kore"},
     ]
 
-    @validator("GEMINI_API_KEY", pre=True)
+    @field_validator("GEMINI_API_KEY", mode="before")
+    @classmethod
     def validate_gemini_api_key(cls, v: str) -> str:
         if not v:
             raise ValueError("GEMINI_API_KEY must be set")

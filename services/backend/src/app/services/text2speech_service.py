@@ -1,5 +1,6 @@
 """Text-to-speech service implementation."""
 
+import os
 import wave
 from typing import List, Optional
 
@@ -19,6 +20,8 @@ class Text2SpeechService:
     def __init__(self):
         """Initialize text-to-speech service."""
         self.gemini_service = GeminiService()
+        self.output_dir = settings.AUDIO_OUTPUT_DIR
+        os.makedirs(self.output_dir, exist_ok=True)
 
     def _create_speech_config(
         self,
