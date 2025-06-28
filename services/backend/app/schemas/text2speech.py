@@ -1,10 +1,11 @@
 """Text-to-speech API schemas."""
 
 from typing import List, Optional
-from pydantic import BaseModel, Field, validator
-from src.core.config import settings
 
-from src.models.text2speech import VoiceName, SpeechSpeed, SpeechPitch
+from pydantic import BaseModel, Field, validator
+
+from app.core.config import settings
+from app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
 
 
 class SpeakerConfig(BaseModel):

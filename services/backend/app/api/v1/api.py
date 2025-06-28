@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from src.api.v1.endpoints import document_edit, text2speech, text2video
+from app.api.v1.routes import document_edit, text2speech, text2video
 
 api_router = APIRouter()
 

@@ -7,7 +7,7 @@ from google import genai
 from google.genai import types
 from loguru import logger
 
-from src.core.config import settings
+from app.core.config import settings
 
 
 class GeminiService:

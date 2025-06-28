@@ -1,10 +1,11 @@
-import time
 import os
+import time
+
+from fastapi import HTTPException
 from google import genai
 from google.genai import types
-from fastapi import HTTPException
 
-from src.core.config import settings
+from app.core.config import settings
 
 
 class Text2VideoService:

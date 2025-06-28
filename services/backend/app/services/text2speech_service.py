@@ -1,15 +1,16 @@
 """Text-to-speech service implementation."""
 
-from typing import List, Optional
 import wave
-from loguru import logger
+from typing import List, Optional
+
 from google import genai
 from google.genai import types
+from loguru import logger
 
-from src.core.config import settings
-from src.models.text2speech import VoiceName, SpeechSpeed, SpeechPitch
-from src.schemas.text2speech import SpeakerConfig
-from src.services.gemini_service import GeminiService
+from app.core.config import settings
+from app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
+from app.schemas.text2speech import SpeakerConfig
+from app.services.gemini_service import GeminiService
 
 
 class Text2SpeechService:
@@ -133,13 +134,17 @@ class Text2SpeechService:
 
             if not response or not response.candidates:
                 raise Exception("No response from Gemini API")
-                
+
             candidate = response.candidates[0]
             if not candidate.content or not candidate.content.parts:
                 raise Exception("Invalid response structure from Gemini API")
-                
+
             part = candidate.content.parts[0]
-            if not hasattr(part, 'inline_data') or not part.inline_data or not part.inline_data.data:
+            if (
+                not hasattr(part, "inline_data")
+                or not part.inline_data
+                or not part.inline_data.data
+            ):
                 raise Exception("No audio data in response")
 
             audio_data = part.inline_data.data

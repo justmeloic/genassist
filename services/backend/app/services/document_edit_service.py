@@ -4,9 +4,9 @@ from typing import Optional
 
 from loguru import logger
 
-from src.core.config import settings
-from src.models.document_edit import DocumentType
-from src.services.gemini_service import GeminiService
+from app.core.config import settings
+from app.models.document_edit import DocumentType
+from app.services.gemini_service import GeminiService
 
 
 class DocumentEditService:

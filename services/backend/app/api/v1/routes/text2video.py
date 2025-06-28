@@ -1,14 +1,15 @@
 # File: src/api/v1/endpoints/text2video.py
 
 import os
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 # Import the specific exceptions from the Google library
 from google.api_core import exceptions
 
-from src.schemas.text2video import Text2VideoRequest, Text2VideoResponse
-from src.services.text2video_service import Text2VideoService
+from app.schemas.text2video import Text2VideoRequest, Text2VideoResponse
+from app.services.text2video_service import Text2VideoService
 
 router = APIRouter()
 service = Text2VideoService()
