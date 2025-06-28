@@ -30,7 +30,7 @@ cp .env.example .env
 
 ```bash
 # Start the development server
-uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
+uvicorn src.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The server will be available at `http://localhost:8000`. The `--reload` flag enables auto-reload on code changes.
