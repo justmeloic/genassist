@@ -2,6 +2,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 const DOCUMENT_EDIT_ENDPOINT = process.env.NEXT_PUBLIC_DOCUMENT_EDIT_ENDPOINT || '/v1/api/documentedit/';
 const TEXT_TO_SPEECH_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_SPEECH_ENDPOINT || '/v1/api/text2speech/';
 const TEXT_TO_VIDEO_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_VIDEO_ENDPOINT || '/v1/api/text2video/';
+const TEXT_TO_IMAGE_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_IMAGE_ENDPOINT || '/v1/api/text2image/';
 
 interface DocumentEditRequest {
   content: string;
@@ -41,6 +42,16 @@ export interface TextToVideoRequest {
 
 export interface TextToVideoResponse {
   file_path: string;
+  status: string;
+}
+
+export interface TextToImageRequest {
+  prompt: string;
+  num_images: number;
+}
+
+export interface TextToImageResponse {
+  file_paths: string[];
   status: string;
 }
 
@@ -108,6 +119,31 @@ export async function generateVideo(request: TextToVideoRequest): Promise<TextTo
   return successData;
 }
 
+export async function generateImages(request: TextToImageRequest): Promise<TextToImageResponse> {
+  const response = await fetch(`${API_BASE_URL}${TEXT_TO_IMAGE_ENDPOINT}generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    if (errorData?.detail) {
+      throw new Error(errorData.detail);
+    }
+    throw new Error(`Request failed with status: ${response.status} ${response.statusText}`);
+  }
+
+  const successData = await response.json();
+  if (!successData) {
+    throw new Error('Invalid response from server');
+  }
+
+  return successData;
+}
+
 export function getAudioUrl(fileId: string): string {
   return `${API_BASE_URL}${TEXT_TO_SPEECH_ENDPOINT}download/${fileId}`;
 }
@@ -123,4 +159,16 @@ export function getVideoUrl(filePath: string | undefined): string {
   }
   
   return `${API_BASE_URL}${TEXT_TO_VIDEO_ENDPOINT}download/${filename}`;
+}
+
+export function getImageUrl(filePath: string | undefined): string {
+  if (!filePath) {
+    throw new Error('File path is required');
+  }
+  const filename = filePath.split('/').pop();
+  if (!filename) {
+    throw new Error('Invalid file path');
+  }
+  // Ensure no double slash in the URL
+  return `${API_BASE_URL}${TEXT_TO_IMAGE_ENDPOINT}/download/${filename}`.replace(/([^:]\/)\/+/g, "$1");
 }

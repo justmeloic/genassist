@@ -1,5 +1,8 @@
 """Main FastAPI application entry point."""
 
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -7,8 +10,15 @@ from src.app.api.v1.api import api_router
 from src.app.core.config import settings
 from src.app.core.logging import setup_logging
 
-# Setup logging
-setup_logging()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle application startup and shutdown events."""
+    setup_logging()
+    logging.info("Starting Document Service API...")
+    yield
+    logging.info("Shutting down Document Service API...")
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -16,6 +26,7 @@ app = FastAPI(
     version=settings.VERSION,
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Set up CORS

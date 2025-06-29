@@ -1,12 +1,11 @@
 "use client";
 
-import type * as React from "react";
+import { Box, FileText, Home, Image, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, Home, Video, Box } from "lucide-react";
+import type * as React from "react";
 import { useState } from "react";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -14,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed: boolean;
@@ -43,6 +43,12 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       icon: Video,
       variant: "default",
       href: "/video",
+    },
+    {
+      title: "Image Generator",
+      icon: Image,
+      variant: "default",
+      href: "/image",
     },
     {
       title: "3D Model Viewer",

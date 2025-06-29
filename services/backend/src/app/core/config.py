@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     GEMINI_MODEL_TTS: str = "gemini-2.5-flash-preview-tts"
     GEMINI_MODEL_MULTI_TTS: str = "gemini-2.5-flash-preview-tts"
     GEMINI_MODEL_VIDEO: str = "veo-2.0-generate-001"
+    GEMINI_MODEL_IMAGE: str = "imagen-4.0-generate-preview-06-06"
 
     # API Configuration
     API_V1_STR: str = "/v1/api"
@@ -46,6 +47,7 @@ class Settings(BaseSettings):
     # File Configuration
     AUDIO_OUTPUT_DIR: str
     VIDEO_OUTPUT_DIR: str
+    IMAGE_OUTPUT_DIR: str
     UPLOAD_DIR: str = "uploads"
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
 

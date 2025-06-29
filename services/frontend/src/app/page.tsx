@@ -1,13 +1,13 @@
 "use client";
-import Link from "next/link";
 import {
-  ArrowRight,
-  FileText,
-  Sparkles,
-  Headphones,
-  Video,
   Box,
+  FileText,
+  Headphones,
+  Image,
+  Sparkles,
+  Video,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
@@ -70,6 +70,14 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
               <div className="w-10 h-10 flex items-center justify-center mx-2">
+                <Image className="w-6 h-6 text-orange-500" />
+              </div>
+              <span className="text-base opacity-65 text-gray-800 dark:text-gray-200">
+                Image Generation
+              </span>
+            </div>
+            <div className="flex items-center px-6 py-3 bg-background dark:bg-background rounded-full shadow-xl border border-gray-100 dark:border-gray-700">
+              <div className="w-10 h-10 flex items-center justify-center mx-2">
                 <Box className="w-6 h-6 text-red-500" />
               </div>
               <span className="text-base opacity-65 text-gray-800 dark:text-gray-200">
@@ -90,6 +98,12 @@ export default function LandingPage() {
               className="mt-8 px-8 py-3 bg-gradient-to-r from-pink-500 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
               Open VideoGen
+            </Link>
+            <Link
+              href="/image"
+              className="mt-8 px-8 py-3 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:scale-105"
+            >
+              Open ImageGen
             </Link>
             <Link
               href="/3dmodel"
