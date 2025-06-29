@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.app.api.v1.api import api_router
+from src.app.api.v1.endpoints import api_router
 from src.app.core.config import settings
 from src.app.core.logging import setup_logging
 

@@ -47,7 +47,7 @@ class GeminiService:
 
             logger.debug(f"Generating content with model: {model}")
 
-            response = self.client.models.generate_content(
+            response = await self.client.aio.models.generate_content(
                 model=model,
                 contents=content,
                 config=config,
@@ -69,5 +69,5 @@ class GeminiService:
             return response
 
         except Exception as e:
-            logger.error(f"Gemini API error: {str(e)}")
-            raise Exception(f"Gemini API error: {str(e)}")
+            logger.error("Gemini API error: %s", e)
+            raise

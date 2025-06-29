@@ -38,7 +38,7 @@ async def generate_speech(
     """
     try:
         logger.info(
-            f"Processing text-to-speech request with {len(request.text)} characters"
+            "Processing text-to-speech request with %s characters", len(request.text)
         )
 
         # Generate unique filename
@@ -62,7 +62,7 @@ async def generate_speech(
         file_path = os.path.join(settings.AUDIO_OUTPUT_DIR, filename)
         await service.save_audio_file(audio_data, file_path)
 
-        logger.info(f"Speech generation completed successfully: {filename}")
+        logger.info("Speech generation completed successfully: %s", filename)
 
         return Text2SpeechResponse(
             audio_file_id=file_id,
@@ -75,7 +75,7 @@ async def generate_speech(
         )
 
     except Exception as e:
-        logger.error(f"Speech generation failed: {str(e)}")
+        logger.error("Speech generation failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Speech generation failed: {str(e)}",
@@ -101,6 +101,7 @@ async def download_audio(file_id: str):
         file_path = os.path.join(settings.AUDIO_OUTPUT_DIR, filename)
 
         if not os.path.exists(file_path):
+            logger.warning("Audio file not found: %s", file_path)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Audio file not found",
@@ -115,7 +116,7 @@ async def download_audio(file_id: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Audio download failed: {str(e)}")
+        logger.error("Audio download failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Audio download failed: {str(e)}",

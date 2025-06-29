@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from src.app.core.config import settings
 from src.app.models.text2speech import SpeechPitch, SpeechSpeed, VoiceName
@@ -46,15 +46,22 @@ class Text2SpeechRequest(BaseModel):
         description="Speech pitch",
     )
 
-    @validator("speakers")
-    def validate_speakers(cls, v, values):
-        """Validate speaker configurations."""
-        if values.get("is_multi_speaker"):
+    @field_validator("speakers")
+    @classmethod
+    def validate_speakers(
+        cls, v: Optional[List[SpeakerConfig]], info: ValidationInfo
+    ) -> Optional[List[SpeakerConfig]]:
+        """
+        Validate speaker configurations based on the is_multi_speaker flag.
+
+        If multi-speaker is enabled and no speakers are provided, this validator
+        populates the speakers list with default values from the application settings.
+        """
+        if info.data.get("is_multi_speaker"):
             if not v:
-                # Use default speakers if none provided
+                # Use default speakers if none are provided for multi-speaker mode
                 return [
-                    SpeakerConfig(**speaker_config)
-                    for speaker_config in settings.DEFAULT_SPEAKERS
+                    SpeakerConfig(**s.model_dump()) for s in settings.DEFAULT_SPEAKERS
                 ]
         elif v:
             raise ValueError("Speakers should not be provided for single-speaker TTS")

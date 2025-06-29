@@ -1,5 +1,6 @@
 """Document editing service."""
 
+import textwrap
 from typing import Optional
 
 from loguru import logger
@@ -35,25 +36,23 @@ class DocumentEditService:
         Returns:
             str: Formatted prompt
         """
-        prompt_parts = [
-            f"You are an expert document editor specializing in {document_type.value} documents.",
-            f"Please edit the following document according to these instructions: {instructions}",
-        ]
-
+        context_str = ""
         if additional_context:
-            prompt_parts.append(f"Additional context: {additional_context}")
+            context_str = f"Additional context: {additional_context}\n\n"
 
-        prompt_parts.extend(
-            [
-                "Document to edit:",
-                "---",
-                content,
-                "---",
-                "Please provide only the edited document content without any explanations or metadata.",
-            ]
-        )
+        prompt = f"""
+            You are an expert document editor specializing in {document_type.value} documents.
 
-        return "\n\n".join(prompt_parts)
+            Please edit the following document according to these instructions: {instructions}
+
+            {context_str}Document to edit:
+            ---
+            {content}
+            ---
+
+            Please provide only the edited document content without any explanations or metadata.
+        """
+        return textwrap.dedent(prompt).strip()
 
     async def edit_document(
         self,

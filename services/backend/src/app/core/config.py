@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
 
     # Security
-    SECRET_KEY: str = ""
+    SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # Gemini API
@@ -56,14 +56,26 @@ class Settings(BaseSettings):
     VIDEO_PERSON_GENERATION: str = "allow_adult"
 
     # Default Speakers Configuration
-    DEFAULT_SPEAKERS: List[Dict[str, str]] = [
-        {"speaker": "Joe", "voice_name": "Algieba"},
-        {"speaker": "Jane", "voice_name": "Kore"},
+    DEFAULT_SPEAKERS: List[SpeakerDefaults] = [
+        SpeakerDefaults(speaker="Joe", voice_name="Algieba"),
+        SpeakerDefaults(speaker="Jane", voice_name="Kore"),
     ]
 
     @field_validator("GEMINI_API_KEY", mode="before")
     @classmethod
     def validate_gemini_api_key(cls, v: str) -> str:
+        """
+        Ensures the GEMINI_API_KEY is provided.
+
+        Args:
+            v: The value of the GEMINI_API_KEY from the environment.
+
+        Returns:
+            The validated API key.
+
+        Raises:
+            ValueError: If the GEMINI_API_KEY is empty or not set.
+        """
         if not v:
             raise ValueError("GEMINI_API_KEY must be set")
         return v

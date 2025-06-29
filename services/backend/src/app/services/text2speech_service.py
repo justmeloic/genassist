@@ -52,7 +52,15 @@ class Text2SpeechService:
         self,
         speakers: List[SpeakerConfig],
     ) -> types.SpeechConfig:
-        """Create multi-speaker speech configuration."""
+        """
+        Create multi-speaker speech configuration.
+
+        Args:
+            speakers: A list of speaker configurations.
+
+        Returns:
+            A SpeechConfig object for multi-speaker synthesis.
+        """
         speaker_configs = [
             types.SpeakerVoiceConfig(
                 speaker=speaker.speaker,
@@ -72,7 +80,18 @@ class Text2SpeechService:
         )
 
     def _format_multi_speaker_text(self, text: str) -> str:
-        """Format text for multi-speaker TTS."""
+        """
+        Format text for multi-speaker TTS by prepending a standard instruction.
+
+        If the text does not already start with the instructional phrase, this
+        method adds it to guide the model correctly.
+
+        Args:
+            text: The input text to format.
+
+        Returns:
+            The formatted text string.
+        """
         if not text.startswith("TTS the following conversation"):
             return f"""TTS the following conversation:
 {text}"""

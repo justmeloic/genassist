@@ -1,4 +1,10 @@
-"""Document editing endpoint."""
+"""
+Defines the API endpoint for document editing.
+
+This endpoint receives document content and editing instructions,
+processes them using the Gemini AI service, and returns the
+edited content.
+"""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
@@ -33,7 +39,7 @@ async def edit_document(
     """
     try:
         logger.info(
-            f"Processing document edit request with {len(request.content)} characters"
+            "Processing document edit request with %s characters", len(request.content)
         )
 
         edited_content = await service.edit_document(
@@ -53,7 +59,7 @@ async def edit_document(
         )
 
     except Exception as e:
-        logger.error(f"Document editing failed: {str(e)}")
+        logger.error("Document editing failed: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Document editing failed: {str(e)}",
