@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { diffChars } from "diff";
-import Editor from "@/components/docgen/Editor";
-import DiffViewer from "@/components/docgen/DiffViewer";
-import LlmPrompt from "@/components/docgen/LlmPrompt";
 import AudioGenerator from "@/components/docgen/AudioGenerator";
+import DiffViewer from "@/components/docgen/DiffViewer";
+import Editor from "@/components/docgen/Editor";
+import LlmPrompt from "@/components/docgen/LlmPrompt";
 import SpeakerModeDialog from "@/components/docgen/SpeakerModeDialog";
 import { editDocument } from "@/lib/api";
+import { diffChars } from "diff";
+import { useEffect, useState } from "react";
 
 export default function DocumentEditor() {
   const [originalContent, setOriginalContent] = useState(
@@ -182,6 +182,7 @@ export default function DocumentEditor() {
               }
               onChange={handleDirectEdit}
               onPreviewChanges={handlePreviewChanges}
+              onAcceptChanges={handleAcceptChanges}
               onRevert={handleRevert}
               onSave={handleSave}
               onReadAloud={handleReadAloud}
@@ -237,12 +238,20 @@ export default function DocumentEditor() {
             {/* LlmPrompt */}
             {!showDiff && !showAudioGenerator && (
               <div
-                className={`transition-all duration-700 ease-in-out opacity-100 translate-x-0`}
+                className={`transition-all duration-700 ease-in-out ${
+                  proposedContent !== originalContent && proposedContent !== ""
+                    ? "opacity-40"
+                    : "opacity-100"
+                } translate-x-0`}
               >
                 <LlmPrompt
                   onSubmit={handleLlmSuggestion}
                   isLoading={isLoading}
-                  disabled={showDiff}
+                  disabled={
+                    showDiff ||
+                    (proposedContent !== originalContent &&
+                      proposedContent !== "")
+                  }
                 />
               </div>
             )}

@@ -1,5 +1,5 @@
 "use client";
-import { Sparkles, Edit } from "lucide-react";
+import { Edit, Sparkles } from "lucide-react";
 
 interface DiffViewerProps {
   diffResult: Array<{
@@ -99,13 +99,13 @@ export default function DiffViewer({
             <div className="flex justify-center gap-4 mt-8">
               <button
                 onClick={onAccept}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-full font-medium transition-colors text-sm"
               >
                 Accept
               </button>
               <button
                 onClick={onReject}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 text-red-600 border-2 border-red-200 rounded-full font-medium transition-colors"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 bg-white hover:bg-gray-50 text-red-600 border-2 border-red-200 rounded-full font-medium transition-colors text-sm"
               >
                 Reject
               </button>

@@ -129,15 +129,21 @@ export default function VideoPage() {
             showGenerator ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"
           }`}
         >
-          <VideoPromptCard
-            prompt={prompt}
-            onPromptChange={setPrompt}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            error={error}
-            suggestedPrompts={suggestedPrompts}
-            onSuggestionClick={handleSuggestionClick}
-          />
+          <div
+            className={`transition-opacity duration-300 ${
+              isLoading ? "opacity-40" : "opacity-100"
+            }`}
+          >
+            <VideoPromptCard
+              prompt={prompt}
+              onPromptChange={setPrompt}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              error={error}
+              suggestedPrompts={suggestedPrompts}
+              onSuggestionClick={handleSuggestionClick}
+            />
+          </div>
 
           {/* Video Generator */}
           {showGenerator && (

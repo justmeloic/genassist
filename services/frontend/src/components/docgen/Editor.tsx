@@ -2,14 +2,23 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
-import { Eye, Undo, Save, Volume2, FileText, Headphones } from "lucide-react";
+import {
+  Check,
+  Eye,
+  FileText,
+  Headphones,
+  Save,
+  Undo,
+  Volume2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import DocumentViewer from "./DocumentViewer";
 
 interface EditorProps {
   content: string;
   onChange: (content: string) => void;
   onPreviewChanges: () => void;
+  onAcceptChanges: () => void;
   onRevert: () => void;
   onSave: () => void;
   onReadAloud: () => void;
@@ -24,6 +33,7 @@ export default function Editor({
   content,
   onChange,
   onPreviewChanges,
+  onAcceptChanges,
   onRevert,
   onSave,
   onReadAloud,
@@ -59,13 +69,22 @@ export default function Editor({
           </h2>
           <div className="flex items-center gap-3">
             {showPreviewButton && (
-              <button
-                onClick={handlePreviewClick}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
-              >
-                <Eye className="w-4 h-4" />
-                Preview Changes
-              </button>
+              <>
+                <button
+                  onClick={onAcceptChanges}
+                  className="flex items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-full hover:bg-green-700 transition-colors text-sm"
+                >
+                  <Check className="w-4 h-4" />
+                  Accept Changes
+                </button>
+                <button
+                  onClick={handlePreviewClick}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors text-sm"
+                >
+                  <Eye className="w-4 h-4" />
+                  Preview Changes
+                </button>
+              </>
             )}
           </div>
         </div>

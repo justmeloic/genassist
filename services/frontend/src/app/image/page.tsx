@@ -84,18 +84,25 @@ export default function ImagePage() {
             showGenerator ? "lg:grid-cols-2" : "max-w-2xl mx-auto w-full"
           }`}
         >
-          <ImagePromptCard
-            prompt={prompt}
-            onPromptChange={setPrompt}
-            numImages={numImages}
-            onNumImagesChange={setNumImages}
-            onSubmit={handleSubmit}
-            isLoading={isLoading}
-            error={error}
-            suggestedPrompts={suggestedPrompts}
-            onSuggestionClick={handleSuggestionClick}
-          />
+          <div
+            className={`transition-opacity duration-300 ${
+              isLoading ? "opacity-40" : "opacity-100"
+            }`}
+          >
+            <ImagePromptCard
+              prompt={prompt}
+              onPromptChange={setPrompt}
+              numImages={numImages}
+              onNumImagesChange={setNumImages}
+              onSubmit={handleSubmit}
+              isLoading={isLoading}
+              error={error}
+              suggestedPrompts={suggestedPrompts}
+              onSuggestionClick={handleSuggestionClick}
+            />
+          </div>
 
+          {/* Image Generator */}
           {showGenerator && (
             <div className="transition-all duration-700 ease-in-out opacity-100 translate-x-0">
               <ImageGenerator
