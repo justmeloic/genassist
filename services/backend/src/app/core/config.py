@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -61,6 +61,8 @@ class Settings(BaseSettings):
         SpeakerDefaults(speaker="Jane", voice_name="Kore"),
     ]
 
+    model_config = ConfigDict(env_file=".env", case_sensitive=True)
+
     @field_validator("GEMINI_API_KEY", mode="before")
     @classmethod
     def validate_gemini_api_key(cls, v: str) -> str:
@@ -79,10 +81,6 @@ class Settings(BaseSettings):
         if not v:
             raise ValueError("GEMINI_API_KEY must be set")
         return v
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 settings = Settings()

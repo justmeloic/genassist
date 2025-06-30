@@ -1,3 +1,22 @@
+# FastAPI Backend - Git Ignore File
+# This file specifies intentionally untrac# Test directories and files (but keep .env.test)
+test_uploads/
+test_audio/
+test_video/
+test_image/
+*.tmp
+.test_*
+test_logs/
+test_outputs/
+test_artifacts/
+*.test.log
+test_*.db
+*.test.db
+test_fixtures/
+mock_data/
+
+
+
 # Python
 __pycache__/
 *.py[cod]
@@ -20,21 +39,31 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# Environment files
+# Note: .env.test is kept in repo for test configuration
+!.env.test
 .env
-.venv
+.env.local
+.env.production
+.env.development
+*.env.local
+*.env.production
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
 
-# IDE
+# IDE - Keep .vscode/settings.json for workspace configuration
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+.vscode/*.code-workspace
 
 # Project specific
 content/
@@ -48,15 +77,37 @@ logs/
 uv.lock
 .python-version
 
-# Testing
-.coverage
-htmlcov/
+# Testing and Coverage
+tests/coverage/
 .pytest_cache/
 .tox/
+.hypothesis/
+.coverage
+.coverage.*
 coverage.xml
 *.cover
 *.py,cover
-.hypothesis/
+nosetests.xml
+htmlcov/
+.nyc_output
+
+# Test artifacts and temporary files
+test_content/
+test_uploads/
+test_audio/
+test_video/
+test_image/
+*.test
+*.tmp
+.test_*
+test_logs/
+test_outputs/
+test_artifacts/
+*.test.log
+test_*.db
+*.test.db
+test_fixtures/
+mock_data/
 
 # Documentation
 docs/_build/
@@ -74,38 +125,44 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
-# Unit test / coverage reports
-.coverage.*
-nosetests.xml
-coverage.xml
-*.cover.*
-.hypothesis/
-.pytest_cache/
-cover/
-
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# mypy
+# Type checking
 .mypy_cache/
 .dmypy.json
 dmypy.json
 
-# Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# Temporary and backup files
+*.temp
+*.bak
+*_backup.py
+*_old.py
+*_broken.py
+
+# AI/ML and Generated Content
+*.pkl
+*.joblib
+*.h5
+*.model
+models/
+checkpoints/
+generated_content/
+audio_output/
+video_output/
+image_output/
+
+# FastAPI specific
+.uvicorn/
+instance/
+
+# Security - API keys and secrets
+.secrets
+secrets.json
+api_keys.txt
+*.pem
+*.key
+*.crt
+
+# Important: Keep test environment file (overrides *.test pattern)
+!.env.test

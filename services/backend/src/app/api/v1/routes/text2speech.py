@@ -121,3 +121,82 @@ async def download_audio(file_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Audio download failed: {str(e)}",
         )
+
+
+@router.get("/speakers")
+async def get_available_speakers():
+    """
+    Get list of available speakers.
+
+    Returns:
+        Dict containing list of available speakers
+    """
+    try:
+        # For now, return a mock list of speakers
+        # In a real implementation, this would come from the TTS service
+        speakers = [
+            {"id": "joe", "name": "Joe", "language": "en-US", "gender": "male"},
+            {"id": "jane", "name": "Jane", "language": "en-US", "gender": "female"},
+            {"id": "alex", "name": "Alex", "language": "en-US", "gender": "neutral"},
+        ]
+
+        return {"speakers": speakers}
+
+    except Exception as e:
+        logger.error("Failed to get speakers: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get speakers: {str(e)}",
+        )
+
+
+@router.get("/speakers/{speaker_id}")
+async def get_speaker_details(speaker_id: str):
+    """
+    Get details for a specific speaker.
+
+    Args:
+        speaker_id: ID of the speaker
+
+    Returns:
+        Dict containing speaker details
+    """
+    try:
+        # Mock speaker details - in real implementation would come from TTS service
+        speaker_details = {
+            "joe": {
+                "speaker": "joe",
+                "voice_name": "Joe",
+                "language_code": "en-US",
+                "gender": "male",
+            },
+            "jane": {
+                "speaker": "jane",
+                "voice_name": "Jane",
+                "language_code": "en-US",
+                "gender": "female",
+            },
+            "alex": {
+                "speaker": "alex",
+                "voice_name": "Alex",
+                "language_code": "en-US",
+                "gender": "neutral",
+            },
+        }
+
+        if speaker_id not in speaker_details:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Speaker not found",
+            )
+
+        return speaker_details[speaker_id]
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to get speaker details: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get speaker details: {str(e)}",
+        )

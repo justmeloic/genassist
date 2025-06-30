@@ -1,19 +1,22 @@
 import os
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from google.api_core import exceptions
 from loguru import logger
 
 from src.app.schemas.text2video import Text2VideoRequest, Text2VideoResponse
 from src.app.services.text2video_service import Text2VideoService
+from src.app.utils.dependencies import get_text2video_service
 
 router = APIRouter()
-service = Text2VideoService()
 
 
 @router.post("/generate", response_model=Text2VideoResponse)
-async def generate_video(request: Text2VideoRequest):
+async def generate_video(
+    request: Text2VideoRequest,
+    service: Text2VideoService = Depends(get_text2video_service),
+):
     """Generate video from text prompt."""
     try:
         logger.info("Generating video for prompt: %s", request.prompt)
@@ -54,7 +57,10 @@ async def generate_video(request: Text2VideoRequest):
 
 
 @router.get("/download/{filename}")
-async def download_video(filename: str):
+async def download_video(
+    filename: str,
+    service: Text2VideoService = Depends(get_text2video_service),
+):
     """Download generated video file."""
     try:
         file_path = os.path.join(service.output_dir, filename)
@@ -70,4 +76,51 @@ async def download_video(filename: str):
         raise HTTPException(
             status_code=500,
             detail=f"Video download failed: {str(e)}",
+        )
+
+
+@router.get("/styles")
+async def get_video_styles():
+    """
+    Get list of available video styles.
+
+    Returns:
+        Dict containing list of available styles
+    """
+    try:
+        styles = [
+            {
+                "id": "professional",
+                "name": "Professional",
+                "description": "Clean, business-oriented style",
+            },
+            {
+                "id": "casual",
+                "name": "Casual",
+                "description": "Relaxed, informal style",
+            },
+            {
+                "id": "animated",
+                "name": "Animated",
+                "description": "Cartoon and animated style",
+            },
+            {
+                "id": "cinematic",
+                "name": "Cinematic",
+                "description": "Movie-like cinematic style",
+            },
+            {
+                "id": "educational",
+                "name": "Educational",
+                "description": "Learning and tutorial style",
+            },
+        ]
+
+        return {"styles": styles}
+
+    except Exception as e:
+        logger.error("Failed to get video styles: %s", e)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get video styles: {str(e)}",
         )
