@@ -1,5 +1,6 @@
 "use client";
 
+import mammoth from "mammoth";
 import type React from "react";
 
 import {
@@ -61,17 +62,47 @@ export default function Editor({
     onPreviewChanges();
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
+    try {
+      let text = "";
+
+      if (fileExtension === ".docx") {
+        // Handle Word documents
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      } else if (fileExtension === ".txt" || fileExtension === ".md") {
+        // Handle plain text files
+        text = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      } else {
+        alert(
+          "Unsupported file type. Please upload .txt, .md, or .docx files."
+        );
+        event.target.value = "";
+        return;
+      }
+
       setLocalContent(text);
       onChange(text);
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      console.error("Error reading file:", error);
+      alert("Error reading file. Please try again.");
+      event.target.value = "";
+    }
   };
 
   return (
@@ -125,7 +156,7 @@ export default function Editor({
               </button>
               <input
                 type="file"
-                accept=".txt,.md,.doc,.docx"
+                accept=".txt,.md,.docx"
                 onChange={handleFileUpload}
                 disabled={disabled}
                 id="file-upload"
