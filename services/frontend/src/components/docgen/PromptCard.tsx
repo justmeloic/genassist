@@ -1,21 +1,21 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
 import { Loader2, SendHorizontal } from "lucide-react";
 import Image from "next/image";
+import type React from "react";
+import { useState } from "react";
 
-interface LlmPromptProps {
+interface PromptCardProps {
   onSubmit: (prompt: string) => void;
   isLoading: boolean;
   disabled?: boolean;
 }
 
-export default function LlmPrompt({
+export default function PromptCard({
   onSubmit,
   isLoading,
   disabled = false,
-}: LlmPromptProps) {
+}: PromptCardProps) {
   const [prompt, setPrompt] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,7 +43,7 @@ export default function LlmPrompt({
             alt="Logo"
             width={25}
             height={25}
-            className="object-contain"
+            className="object-contain animate-bounce"
           />
           AI Edit Suggestions
         </h2>

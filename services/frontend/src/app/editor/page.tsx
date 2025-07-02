@@ -3,7 +3,7 @@
 import AudioGenerator from "@/components/docgen/AudioGenerator";
 import DiffViewer from "@/components/docgen/DiffViewer";
 import Editor from "@/components/docgen/Editor";
-import LlmPrompt from "@/components/docgen/LlmPrompt";
+import PromptCard from "@/components/docgen/PromptCard";
 import SpeakerModeDialog from "@/components/docgen/SpeakerModeDialog";
 import { editDocument } from "@/lib/api";
 import { diffChars } from "diff";
@@ -198,7 +198,7 @@ export default function DocumentEditor() {
             />
           </div>
 
-          {/* Right Panel - Diff Viewer, Audio Generator, or LlmPrompt */}
+          {/* Right Panel - Diff Viewer, Audio Generator, or PromptCard */}
           <div className="relative">
             {/* Audio Generator */}
             <div
@@ -235,7 +235,7 @@ export default function DocumentEditor() {
               )}
             </div>
 
-            {/* LlmPrompt */}
+            {/* PromptCard */}
             {!showDiff && !showAudioGenerator && (
               <div
                 className={`transition-all duration-700 ease-in-out ${
@@ -244,7 +244,7 @@ export default function DocumentEditor() {
                     : "opacity-100"
                 } translate-x-0`}
               >
-                <LlmPrompt
+                <PromptCard
                   onSubmit={handleLlmSuggestion}
                   isLoading={isLoading}
                   disabled={
