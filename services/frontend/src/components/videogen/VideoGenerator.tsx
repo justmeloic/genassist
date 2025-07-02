@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { X, Download, Loader2 } from "lucide-react";
 import type { TextToVideoResponse } from "@/lib/api";
 import { getVideoUrl } from "@/lib/api";
+import { Download, Loader2, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface VideoGeneratorProps {
   prompt: string;
@@ -110,20 +110,19 @@ export default function VideoGenerator({
         {isGenerating ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce">
                 <Loader2 className="w-8 h-8 text-white animate-spin" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse opacity-30" />
             </div>
 
             <div className="text-center space-y-2">
               <h3 className="font-medium text-card-foreground">
-                {isRetrying ? 'Retrying Generation' : 'Generating Video'}
+                {isRetrying ? "Retrying Generation" : "Generating Video"}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {isRetrying 
+                {isRetrying
                   ? `Attempt ${retryCount} of ${maxRetries}...`
-                  : 'Please wait while we process your request...'}
+                  : "Please wait while we process your request..."}
               </p>
             </div>
 

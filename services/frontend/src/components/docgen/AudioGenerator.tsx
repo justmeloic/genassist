@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import type { TextToSpeechResponse } from "@/lib/api";
-import { X, Download, Play, Pause, Headphones, Loader2 } from "lucide-react";
 import { generateSpeech, getAudioUrl } from "@/lib/api";
+import { Download, Headphones, Loader2, Pause, Play, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface AudioGeneratorProps {
   content: string;
@@ -148,10 +148,9 @@ export default function AudioGenerator({
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce">
                 <Loader2 className="w-8 h-8 text-white animate-spin" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse opacity-30"></div>
             </div>
 
             <div className="text-center space-y-2">

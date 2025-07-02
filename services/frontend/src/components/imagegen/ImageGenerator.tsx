@@ -1,9 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X, Download, Loader2 } from "lucide-react";
-import type { TextToImageResponse } from "@/lib/api";
-import { getImageUrl } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
@@ -12,7 +8,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import type { TextToImageResponse } from "@/lib/api";
+import { getImageUrl } from "@/lib/api";
+import { Download, Loader2, X } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -62,10 +62,9 @@ export default function ImageGenerator({
         {isGenerating ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full flex items-center justify-center animate-bounce">
                 <Loader2 className="w-8 h-8 text-white animate-spin" />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full animate-pulse opacity-30" />
             </div>
             <div className="text-center space-y-2">
               <h3 className="font-medium text-card-foreground">
