@@ -9,6 +9,7 @@ import {
   Headphones,
   Save,
   Undo,
+  Upload,
   Volume2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -60,6 +61,19 @@ export default function Editor({
     onPreviewChanges();
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      setLocalContent(text);
+      onChange(text);
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <>
       <div className="bg-card rounded-3xl dark:border dark:shadow border-border overflow-hidden shadow-card-normal hover:shadow-card-hover focus-within:shadow-card-hover transition-all duration-300">
@@ -100,40 +114,57 @@ export default function Editor({
             <div className="text-xs text-muted-foreground ml-4 mb-6 opacity-65">
               {localContent.length} characters{" "}
             </div>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={onRevert}
                 disabled={!canRevert || disabled}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-red-500/70 hover:text-white dark:hover:bg-red-500/70 dark:hover:text-white text-gray-700 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-10 h-10 bg-gray-100 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-red-500/70 hover:text-white dark:hover:bg-red-500/70 dark:hover:text-white text-red-500 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Revert to previous state"
               >
                 <Undo className="w-4 h-4" />
-                Revert
               </button>
+              <input
+                type="file"
+                accept=".txt,.md,.doc,.docx"
+                onChange={handleFileUpload}
+                disabled={disabled}
+                id="file-upload"
+                className="hidden"
+              />
+              <label
+                htmlFor="file-upload"
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors cursor-pointer dark:border dark:border-gray-700 ${
+                  disabled
+                    ? "opacity-50 cursor-not-allowed"
+                    : "bg-blue-100/50 dark:bg-transparent hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300"
+                }`}
+                title="Upload document"
+              >
+                <Upload className="w-4 h-4" />
+              </label>
+
               <button
                 onClick={() => setIsViewerOpen(true)}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-10 h-10 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="View document with Markdown formatting"
               >
                 <FileText className="w-4 h-4" />
-                View
               </button>
 
               <button
                 onClick={onSave}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-10 h-10 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Save document locally"
               >
                 <Save className="w-4 h-4" />
-                Save
               </button>
 
               <button
                 onClick={onReadAloud}
                 disabled={disabled}
-                className={`flex items-center gap-2 px-3 py-2 text-xs rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:border dark:border-gray-700 ${
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:border dark:border-gray-700 ${
                   isReading
                     ? "bg-gradient-to-r from-blue-500/50 to-pink-500/50 text-white"
                     : "bg-blue-100/50 dark:bg-transparent hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300"
@@ -141,17 +172,15 @@ export default function Editor({
                 title={isReading ? "Stop reading" : "Read document aloud"}
               >
                 <Volume2 className="w-4 h-4" />
-                {isReading ? "Stop" : "Read"}
               </button>
 
               <button
                 onClick={onGenerateAudio}
                 disabled={disabled}
-                className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-10 h-10 bg-blue-100/50 dark:bg-transparent dark:border dark:border-gray-700 hover:bg-gradient-to-r hover:from-blue-500/50 hover:to-pink-500/50 hover:text-white text-blue-700/60 dark:text-gray-300 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Generate audio file from document"
               >
                 <Headphones className="w-4 h-4" />
-                Audio
               </button>
             </div>
           </div>
