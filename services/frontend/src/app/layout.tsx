@@ -1,9 +1,8 @@
 "use client";
 
-import "../styles/globals.css";
-import type React from "react";
-import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/theme-provider";
+import type React from "react";
+import "../styles/globals.css";
 import { ClientLayout } from "./client-layout";
 
 export default function RootLayout({
@@ -13,6 +12,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>Genassist</title>
+        <link rel="icon" href="/logo-avatar-icon.png" type="image/svg+xml" />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"
