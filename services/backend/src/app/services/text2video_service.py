@@ -25,7 +25,7 @@ class Text2VideoService:
 
     def __init__(self):
         """Initializes the Text2VideoService."""
-        self.client = genai.Client()
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
         self.output_dir = settings.VIDEO_OUTPUT_DIR
         os.makedirs(self.output_dir, exist_ok=True)
 

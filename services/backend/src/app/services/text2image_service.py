@@ -26,7 +26,7 @@ class Text2ImageService:
 
     def __init__(self):
         """Initializes the Text2ImageService, creating the output directory if needed."""
-        self.client = genai.Client()
+        self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
         self.output_dir = settings.IMAGE_OUTPUT_DIR
         os.makedirs(self.output_dir, exist_ok=True)
 
