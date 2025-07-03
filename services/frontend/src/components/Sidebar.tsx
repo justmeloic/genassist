@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, FileText, Home, Image, Video } from "lucide-react";
+import { AudioLines, Box, FileText, Home, Image, Video } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type * as React from "react";
@@ -55,6 +55,12 @@ export function Sidebar({ className, isCollapsed, onToggle }: SidebarProps) {
       icon: Box,
       variant: "default",
       href: "/3dmodel",
+    },
+    {
+      title: "Real-time Streaming",
+      icon: AudioLines,
+      variant: "default",
+      href: "/live",
     },
   ] as const;
 

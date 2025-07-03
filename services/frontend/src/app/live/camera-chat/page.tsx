@@ -1,4 +1,5 @@
 "use client";
+import { ChatTranscript } from "@/components/live/ChatTranscript";
 import {
   ChatMode,
   getWebSocketUrl,
@@ -14,12 +15,17 @@ import {
   MicOff,
   Phone,
   PhoneOff,
-  Settings,
   Volume2,
   VolumeX,
 } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+interface ChatMessage {
+  role: "user" | "bot";
+  content: string;
+  timestamp: number;
+}
 
 interface CameraChatState {
   isConnected: boolean;
@@ -27,8 +33,7 @@ interface CameraChatState {
   isCameraOn: boolean;
   isMuted: boolean;
   sessionId: string | null;
-  transcript: string;
-  aiResponse: string;
+  chatHistory: ChatMessage[];
   connectionStatus: "disconnected" | "connecting" | "connected" | "error";
   error: string | null;
 }
@@ -40,8 +45,7 @@ export default function CameraChatPage() {
     isCameraOn: false,
     isMuted: false,
     sessionId: null,
-    transcript: "",
-    aiResponse: "",
+    chatHistory: [],
     connectionStatus: "disconnected",
     error: null,
   });
@@ -57,6 +61,7 @@ export default function CameraChatPage() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const connectToChat = async () => {
     try {
@@ -137,6 +142,19 @@ export default function CameraChatPage() {
     }));
   };
 
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const scrollHeight = chatContainerRef.current.scrollHeight;
+      const height = chatContainerRef.current.clientHeight;
+      const maxScrollTop = scrollHeight - height;
+      chatContainerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [state.chatHistory]);
+
   const handleWebSocketMessage = (message: any) => {
     switch (message.type) {
       case WebSocketMessageType.SESSION_START:
@@ -148,10 +166,30 @@ export default function CameraChatPage() {
         }));
         break;
       case WebSocketMessageType.INPUT_TRANSCRIPTION:
-        setState((prev) => ({ ...prev, transcript: message.data.text }));
+        setState((prev) => ({
+          ...prev,
+          chatHistory: [
+            ...prev.chatHistory,
+            {
+              role: "user",
+              content: message.data.text,
+              timestamp: Date.now(),
+            },
+          ],
+        }));
         break;
       case WebSocketMessageType.OUTPUT_TRANSCRIPTION:
-        setState((prev) => ({ ...prev, aiResponse: message.data.text }));
+        setState((prev) => ({
+          ...prev,
+          chatHistory: [
+            ...prev.chatHistory,
+            {
+              role: "bot",
+              content: message.data.text,
+              timestamp: Date.now(),
+            },
+          ],
+        }));
         break;
       case WebSocketMessageType.AUDIO_DATA:
         playAudioResponse(message.data.audio);
@@ -342,7 +380,7 @@ export default function CameraChatPage() {
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-4  border-gray-200 dark:border-gray-700">
         <Link
           href="/live"
           className="p-3 bg-blue-100 dark:bg-gray-700 rounded-full hover:bg-blue-200 dark:hover:bg-gray-600 transition-all duration-300 shadow-lg"
@@ -352,7 +390,7 @@ export default function CameraChatPage() {
 
         <div className="flex items-center gap-3">
           <div
-            className={`w-3 h-3 rounded-full ${
+            className={`w-4 h-4 rounded-full ${
               state.connectionStatus === "connected"
                 ? "bg-green-500"
                 : state.connectionStatus === "connecting"
@@ -362,25 +400,21 @@ export default function CameraChatPage() {
                 : "bg-gray-500"
             }`}
           ></div>
-          <h1 className="text-lg font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
+          <h1 className="text-xl font-semibold bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
             Camera Chat
           </h1>
         </div>
 
         <button
-          onClick={() => {
-            /* TODO: Open settings modal */
-          }}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+          onClick={() => {}}
+          className="p-2 rounded-3xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        ></button>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex">
         {/* Video Feed */}
-        <div className="flex-1 bg-gray-900 relative">
+        <div className="flex-1 bg-gray-900 relative rounded-3xl mx-14 mb-52">
           {state.isCameraOn ? (
             <video
               ref={videoRef}
@@ -403,7 +437,7 @@ export default function CameraChatPage() {
 
           {/* Camera Status Overlay */}
           {state.isCameraOn && (
-            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2">
+            <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm rounded-3xl px-3 py-2">
               <div className="flex items-center gap-2 text-white">
                 <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium">Live</span>
@@ -413,18 +447,18 @@ export default function CameraChatPage() {
         </div>
 
         {/* Chat Panel */}
-        <div className="w-80 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="w-80  border-gray-200 dark:border-gray-700 flex flex-col">
           {/* Connection Status */}
           <div className="p-4">
             {state.connectionStatus === "disconnected" && (
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-center">
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-3xl p-4 text-center">
                 <h3 className="font-medium mb-2">Ready to Start</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   Connect to begin video chat with AI
                 </p>
                 <button
                   onClick={connectToChat}
-                  className="w-full px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg font-medium hover:shadow-lg transition-all"
+                  className="w-full px-4 py-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-3xl font-medium hover:shadow-lg transition-all"
                 >
                   <Phone className="w-4 h-4 inline mr-2" />
                   Connect
@@ -433,7 +467,7 @@ export default function CameraChatPage() {
             )}
 
             {state.connectionStatus === "connecting" && (
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-center">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-3xl p-4 text-center">
                 <div className="animate-spin w-6 h-6 border-2 border-yellow-500 border-t-transparent rounded-full mx-auto mb-2"></div>
                 <p className="text-yellow-700 dark:text-yellow-300 text-sm">
                   Connecting...
@@ -442,13 +476,13 @@ export default function CameraChatPage() {
             )}
 
             {state.connectionStatus === "error" && (
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-3xl p-4 text-center">
                 <p className="text-red-700 dark:text-red-300 text-sm mb-2">
                   {state.error}
                 </p>
                 <button
                   onClick={connectToChat}
-                  className="w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                  className="w-full px-3 py-2 bg-red-600 text-white rounded-3xl hover:bg-red-700 transition-colors text-sm"
                 >
                   Retry
                 </button>
@@ -459,36 +493,12 @@ export default function CameraChatPage() {
           {/* Chat Messages */}
           {state.isConnected && (
             <>
-              <div className="flex-1 p-4 space-y-3 overflow-y-auto">
-                {state.transcript && (
-                  <div className="bg-pink-50 dark:bg-pink-900/20 rounded-lg p-3">
-                    <h4 className="font-medium text-pink-900 dark:text-pink-100 text-sm mb-1">
-                      You:
-                    </h4>
-                    <p className="text-pink-800 dark:text-pink-200 text-sm">
-                      {state.transcript}
-                    </p>
-                  </div>
-                )}
-
-                {state.aiResponse && (
-                  <div className="bg-rose-50 dark:bg-rose-900/20 rounded-lg p-3">
-                    <h4 className="font-medium text-rose-900 dark:text-rose-100 text-sm mb-1">
-                      AI:
-                    </h4>
-                    <p className="text-rose-800 dark:text-rose-200 text-sm">
-                      {state.aiResponse}
-                    </p>
-                  </div>
-                )}
-              </div>
-
               {/* Controls */}
               <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <button
                     onClick={toggleCamera}
-                    className={`p-2 rounded-lg transition-all text-sm ${
+                    className={`p-2 rounded-3xl transition-all text-sm ${
                       state.isCameraOn
                         ? "bg-pink-500 text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400"
@@ -503,7 +513,7 @@ export default function CameraChatPage() {
 
                   <button
                     onClick={toggleMute}
-                    className={`p-2 rounded-lg transition-all ${
+                    className={`p-2 rounded-3xl transition-all ${
                       state.isMuted
                         ? "bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400"
@@ -519,7 +529,7 @@ export default function CameraChatPage() {
 
                 <button
                   onClick={toggleRecording}
-                  className={`w-full p-3 rounded-lg transition-all ${
+                  className={`w-full p-3 rounded-3xl transition-all ${
                     state.isRecording
                       ? "bg-red-500 text-white animate-pulse"
                       : "bg-pink-500 text-white hover:bg-pink-600"
@@ -534,11 +544,17 @@ export default function CameraChatPage() {
 
                 <button
                   onClick={disconnectFromChat}
-                  className="w-full mt-2 p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 transition-all"
+                  className="w-full mt-2 p-2 rounded-3xl bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 transition-all"
                 >
                   <PhoneOff className="w-4 h-4" />
                 </button>
               </div>
+
+              {/* Chat Transcript */}
+              <ChatTranscript
+                chatHistory={state.chatHistory}
+                isConnected={state.isConnected}
+              />
             </>
           )}
         </div>
