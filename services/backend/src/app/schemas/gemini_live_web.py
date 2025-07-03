@@ -75,7 +75,7 @@ class WebSocketMessage(BaseModel):
     """Base WebSocket message structure."""
 
     type: WebSocketMessageType
-    session_id: str
+    session_id: Optional[str] = None
     timestamp: Optional[float] = None
     data: Optional[Dict[str, Any]] = None
 
@@ -92,8 +92,8 @@ class AudioMessage(WebSocketMessage):
 
     type: WebSocketMessageType = WebSocketMessageType.AUDIO_DATA
     data: Dict[
-        str, Union[str, bytes]
-    ]  # {"audio": base64_audio_data, "mime_type": "audio/pcm"}
+        str, Union[str, bytes, int]
+    ]  # {"audio": base64_audio_data, "mime_type": "audio/pcm", "sample_rate": 24000}
 
 
 class TextMessage(WebSocketMessage):
@@ -120,10 +120,7 @@ class CameraMessage(WebSocketMessage):
 class TranscriptionMessage(WebSocketMessage):
     """Transcription message."""
 
-    type: Union[
-        WebSocketMessageType.INPUT_TRANSCRIPTION,
-        WebSocketMessageType.OUTPUT_TRANSCRIPTION,
-    ]
+    type: WebSocketMessageType
     data: Dict[str, str]  # {"text": "transcribed text"}
 
 

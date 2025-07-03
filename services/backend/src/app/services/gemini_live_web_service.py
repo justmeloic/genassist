@@ -102,6 +102,7 @@ class LiveChatSession:
         # Gemini Live API components
         self.live_service = GeminiLiveService()
         self.gemini_session = None
+        self.gemini_context_manager = None
         self.audio_out_queue = None
 
         # Background tasks
@@ -123,20 +124,24 @@ class LiveChatSession:
                 enable_output_audio_transcription=self.config.enable_output_transcription,
             )
 
-            # Connect to Gemini Live API
-            self.gemini_session = await self.live_service.client.aio.live.connect(
+            # Connect to Gemini Live API and store the context manager
+            self.gemini_context_manager = self.live_service.client.aio.live.connect(
                 model=self.live_service.native_audio_model,
                 config=self.live_service._create_session_config(live_config),
-            ).__aenter__()
+            )
+
+            # Enter the context manager
+            self.gemini_session = await self.gemini_context_manager.__aenter__()
 
             # Create audio output queue
             self.audio_out_queue = asyncio.Queue()
+
+            self.is_active = True
 
             # Start background tasks
             self.tasks.append(asyncio.create_task(self._handle_gemini_responses()))
             self.tasks.append(asyncio.create_task(self._process_audio_output()))
 
-            self.is_active = True
             logger.info(f"Started Gemini session for {self.session_id}")
 
         except Exception as e:
@@ -156,10 +161,10 @@ class LiveChatSession:
         if self.tasks:
             await asyncio.gather(*self.tasks, return_exceptions=True)
 
-        # Close Gemini session
-        if self.gemini_session:
+        # Close Gemini session using the context manager
+        if self.gemini_session and hasattr(self, "gemini_context_manager"):
             try:
-                await self.gemini_session.__aexit__(None, None, None)
+                await self.gemini_context_manager.__aexit__(None, None, None)
             except Exception as e:
                 logger.warning(f"Error closing Gemini session: {e}")
 
@@ -181,10 +186,12 @@ class LiveChatSession:
         """Send text message to Gemini."""
         if self.gemini_session and self.is_active:
             try:
+                logger.info(f"Sending text to Gemini: '{text}'")
                 await self.gemini_session.send_client_content(
                     turns={"role": "user", "parts": [{"text": text}]},
                     turn_complete=True,
                 )
+                logger.info(f"Text sent successfully to session {self.session_id}")
                 self.update_activity()
             except Exception as e:
                 logger.error(f"Failed to send text: {e}")
@@ -204,16 +211,30 @@ class LiveChatSession:
 
     async def _handle_gemini_responses(self):
         """Handle responses from Gemini Live API."""
+        logger.info(f"Starting Gemini response handler for session {self.session_id}")
         while self.is_active and self.gemini_session:
             try:
+                # Get the next turn from the session
+                logger.debug(f"Waiting for turn from Gemini session {self.session_id}")
                 turn = self.gemini_session.receive()
+
+                # Process all responses in this turn
                 async for response in turn:
-                    # Handle audio data
+                    if not self.is_active:
+                        break
+
+                    logger.debug(f"Received response type: {type(response).__name__}")
+
+                    # Handle direct audio data (if any)
                     if hasattr(response, "data") and response.data:
+                        logger.info(
+                            f"Received direct audio data: {len(response.data)} bytes"
+                        )
                         await self.audio_out_queue.put(response.data)
 
-                    # Handle text responses
+                    # Handle direct text responses (if any)
                     if hasattr(response, "text") and response.text:
+                        logger.info(f"Received direct text: {response.text}")
                         await self._send_websocket_message(
                             WebSocketMessage(
                                 type=WebSocketMessageType.TEXT_RESPONSE,
@@ -223,14 +244,65 @@ class LiveChatSession:
                             )
                         )
 
-                    # Handle transcriptions
+                    # Handle server content
                     if hasattr(response, "server_content") and response.server_content:
-                        await self._handle_transcriptions(response.server_content)
+                        server_content = response.server_content
+                        logger.debug(
+                            f"Processing server content for session {self.session_id}"
+                        )
 
+                        # Handle model turn with parts (contains audio and text)
+                        if (
+                            server_content.model_turn
+                            and server_content.model_turn.parts
+                        ):
+                            logger.info(
+                                f"Model turn has {len(server_content.model_turn.parts)} parts"
+                            )
+                            for i, part in enumerate(server_content.model_turn.parts):
+                                # Handle audio data in parts
+                                if (
+                                    hasattr(part, "inline_data")
+                                    and part.inline_data
+                                    and part.inline_data.data
+                                ):
+                                    logger.info(
+                                        f"Part {i}: Audio data {len(part.inline_data.data)} bytes"
+                                    )
+                                    await self.audio_out_queue.put(
+                                        part.inline_data.data
+                                    )
+
+                                # Handle text in parts
+                                if hasattr(part, "text") and part.text:
+                                    logger.info(f"Part {i}: Text '{part.text}'")
+                                    await self._send_websocket_message(
+                                        WebSocketMessage(
+                                            type=WebSocketMessageType.TEXT_RESPONSE,
+                                            session_id=self.session_id,
+                                            timestamp=time.time(),
+                                            data={"text": part.text},
+                                        )
+                                    )
+
+                        # Handle transcriptions
+                        await self._handle_transcriptions(server_content)
+
+            except asyncio.CancelledError:
+                logger.info(f"Gemini response handler cancelled for {self.session_id}")
+                break
             except Exception as e:
                 if self.is_active:
                     logger.error(f"Error handling Gemini responses: {e}")
-                break
+                    import traceback
+
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+                    # Wait a bit before retrying
+                    await asyncio.sleep(1)
+                else:
+                    break
+
+        logger.info(f"Gemini response handler stopped for session {self.session_id}")
 
     async def _handle_transcriptions(self, server_content):
         """Handle transcription data from server."""
@@ -239,6 +311,9 @@ class LiveChatSession:
             server_content.input_transcription
             and server_content.input_transcription.text
         ):
+            logger.info(
+                f"Input transcription: {server_content.input_transcription.text}"
+            )
             await self._send_websocket_message(
                 TranscriptionMessage(
                     type=WebSocketMessageType.INPUT_TRANSCRIPTION,
@@ -253,6 +328,9 @@ class LiveChatSession:
             server_content.output_transcription
             and server_content.output_transcription.text
         ):
+            logger.info(
+                f"Output transcription: {server_content.output_transcription.text}"
+            )
             await self._send_websocket_message(
                 TranscriptionMessage(
                     type=WebSocketMessageType.OUTPUT_TRANSCRIPTION,
@@ -392,10 +470,15 @@ class GeminiLiveWebSocketService:
                     break
 
             except WebSocketDisconnect:
+                logger.info(f"WebSocket disconnected for session {session.session_id}")
                 break
             except Exception as e:
                 logger.error(f"Error handling session message: {e}")
-                await self._send_error(session.websocket, str(e))
+                # Don't break the loop for message errors, just log and continue
+                try:
+                    await self._send_error(session.websocket, str(e))
+                except Exception:
+                    pass  # If we can't send error, connection might be broken
 
     async def _handle_audio_message(
         self, session: LiveChatSession, message: AudioMessage

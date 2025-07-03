@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Real-time Voice Chat with Gemini Live API
 
@@ -157,10 +156,27 @@ class LiveVoiceChat:
 
     async def play_audio_responses(self):
         """Play audio responses from the AI through speakers."""
+        audio_chunk_count = 0
         while True:
             try:
                 # Get audio data from queue
                 audio_data = await self.audio_out_queue.get()
+                audio_chunk_count += 1
+
+                print(
+                    f"🔊 Playing audio chunk {audio_chunk_count}: {len(audio_data)} bytes"
+                )
+
+                # Debug: Save first few chunks to files for analysis
+                if audio_chunk_count <= 3:
+                    filename = f"debug_audio_chunk_{audio_chunk_count}.raw"
+                    with open(filename, "wb") as f:
+                        f.write(audio_data)
+                    print(f"💾 Saved audio chunk to {filename}")
+
+                    # Show first few bytes in hex
+                    hex_bytes = " ".join([f"{b:02x}" for b in audio_data[:16]])
+                    print(f"🔍 First 16 bytes: {hex_bytes}")
 
                 # Play through speakers
                 await asyncio.to_thread(self.output_stream.write, audio_data)
@@ -172,21 +188,49 @@ class LiveVoiceChat:
     async def handle_live_responses(self):
         """Handle responses from the Live API session."""
         print("🤖 Ready to receive AI responses...")
+        response_count = 0
 
         while True:
             try:
                 turn = self.session.receive()
                 async for response in turn:
+                    response_count += 1
+
                     # Handle audio data
                     if hasattr(response, "data") and response.data:
+                        print(
+                            f"📥 Response {response_count}: Received audio data ({len(response.data)} bytes)"
+                        )
                         await self.audio_out_queue.put(response.data)
 
                     # Handle text responses (for debugging)
                     if hasattr(response, "text") and response.text:
                         print(f"🤖 AI: {response.text}")
 
-                    # Handle transcriptions
+                    # Handle server content parts
                     if hasattr(response, "server_content") and response.server_content:
+                        if (
+                            response.server_content.model_turn
+                            and response.server_content.model_turn.parts
+                        ):
+                            for i, part in enumerate(
+                                response.server_content.model_turn.parts
+                            ):
+                                if (
+                                    hasattr(part, "inline_data")
+                                    and part.inline_data
+                                    and part.inline_data.data
+                                ):
+                                    print(
+                                        f"📥 Response {response_count}: Model part {i} audio data ({len(part.inline_data.data)} bytes)"
+                                    )
+                                    await self.audio_out_queue.put(
+                                        part.inline_data.data
+                                    )
+                                if hasattr(part, "text") and part.text:
+                                    print(f"🤖 AI text part {i}: {part.text}")
+
+                        # Handle transcriptions
                         if (
                             response.server_content.input_transcription
                             and response.server_content.input_transcription.text

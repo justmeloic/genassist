@@ -3,6 +3,10 @@ const DOCUMENT_EDIT_ENDPOINT = process.env.NEXT_PUBLIC_DOCUMENT_EDIT_ENDPOINT ||
 const TEXT_TO_SPEECH_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_SPEECH_ENDPOINT || '/v1/api/text2speech/';
 const TEXT_TO_VIDEO_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_VIDEO_ENDPOINT || '/v1/api/text2video/';
 const TEXT_TO_IMAGE_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_IMAGE_ENDPOINT || '/v1/api/text2image/';
+const GEMINI_LIVE_ENDPOINT = process.env.NEXT_PUBLIC_GEMINI_LIVE_ENDPOINT || '/v1/api/gemini-live/';
+
+// WebSocket endpoints
+const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 'ws://localhost:8000';
 
 interface DocumentEditRequest {
   content: string;
@@ -171,4 +175,175 @@ export function getImageUrl(filePath: string | undefined): string {
   }
   // Ensure no double slash in the URL
   return `${API_BASE_URL}${TEXT_TO_IMAGE_ENDPOINT}/download/${filename}`.replace(/([^:]\/)\/+/g, "$1");
+}
+
+// Gemini Live WebSocket Types
+export enum ChatMode {
+  VOICE = "voice",
+  SCREEN = "screen", 
+  CAMERA = "camera"
+}
+
+export enum VoiceName {
+  PUCK = "Puck",
+  CHARON = "Charon", 
+  KORE = "Kore",
+  FENRIR = "Fenrir",
+  AOEDE = "Aoede"
+}
+
+export enum WebSocketMessageType {
+  // Connection management
+  CONNECT = "connect",
+  DISCONNECT = "disconnect",
+  ERROR = "error",
+  
+  // Audio messages
+  AUDIO_DATA = "audio_data",
+  AUDIO_CONFIG = "audio_config",
+  
+  // Text messages
+  TEXT_MESSAGE = "text_message",
+  TEXT_RESPONSE = "text_response",
+  
+  // Screen/Camera messages
+  SCREEN_DATA = "screen_data",
+  CAMERA_DATA = "camera_data",
+  
+  // Transcription messages
+  INPUT_TRANSCRIPTION = "input_transcription",
+  OUTPUT_TRANSCRIPTION = "output_transcription",
+  
+  // Session management
+  SESSION_START = "session_start",
+  SESSION_END = "session_end",
+  SESSION_CONFIG = "session_config"
+}
+
+export interface SessionConfig {
+  chat_mode: ChatMode;
+  voice_name?: VoiceName;
+  system_instruction?: string;
+  enable_input_transcription?: boolean;
+  enable_output_transcription?: boolean;
+}
+
+export interface WebSocketMessage {
+  type: WebSocketMessageType;
+  session_id?: string;
+  timestamp?: number;
+  data?: any;
+}
+
+export interface ConnectMessage extends WebSocketMessage {
+  type: WebSocketMessageType.CONNECT;
+  data: SessionConfig;
+}
+
+export interface AudioMessage extends WebSocketMessage {
+  type: WebSocketMessageType.AUDIO_DATA;
+  data: {
+    audio: string; // base64 encoded
+    mime_type?: string;
+  };
+}
+
+export interface TextMessage extends WebSocketMessage {
+  type: WebSocketMessageType.TEXT_MESSAGE;
+  data: {
+    text: string;
+  };
+}
+
+export interface ScreenMessage extends WebSocketMessage {
+  type: WebSocketMessageType.SCREEN_DATA;
+  data: {
+    image: string; // base64 encoded
+    mime_type?: string;
+  };
+}
+
+export interface CameraMessage extends WebSocketMessage {
+  type: WebSocketMessageType.CAMERA_DATA;
+  data: {
+    image: string; // base64 encoded
+    mime_type?: string;
+  };
+}
+
+export interface SessionInfo {
+  session_id: string;
+  chat_mode: ChatMode;
+  voice_name?: VoiceName;
+  connected_at: number;
+  last_activity: number;
+  is_active: boolean;
+}
+
+export interface SessionStatsResponse {
+  total_sessions: number;
+  active_sessions: number;
+  voice_sessions: number;
+  screen_sessions: number;
+  camera_sessions: number;
+  average_session_duration: number;
+}
+
+// Gemini Live WebSocket Functions
+export function getWebSocketUrl(chatMode: ChatMode): string {
+  const endpoint = chatMode === ChatMode.VOICE ? 'voice-chat' : 
+                   chatMode === ChatMode.SCREEN ? 'screen-share' : 'camera-chat';
+  return `${WS_BASE_URL}${GEMINI_LIVE_ENDPOINT}${endpoint}`;
+}
+
+export async function getAvailableVoices(): Promise<{voices: Array<{id: string, name: string, description: string}>}> {
+  const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}voices`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch available voices');
+  }
+  
+  return response.json();
+}
+
+export async function getSessionStats(): Promise<SessionStatsResponse> {
+  const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}stats`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch session stats');
+  }
+  
+  return response.json();
+}
+
+export async function getActiveSessions(): Promise<{sessions: SessionInfo[], total_count: number}> {
+  const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}sessions`);
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch active sessions');
+  }
+  
+  return response.json();
+}
+
+export async function terminateSession(sessionId: string): Promise<{message: string, session_id: string}> {
+  const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}sessions/${sessionId}`, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to terminate session');
+  }
+  
+  return response.json();
+}
+
+export async function healthCheck(): Promise<{status: string, active_sessions: number, total_sessions: number}> {
+  const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}health`);
+  
+  if (!response.ok) {
+    throw new Error('Health check failed');
+  }
+  
+  return response.json();
 }

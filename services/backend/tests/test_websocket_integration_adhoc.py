@@ -43,7 +43,7 @@ async def test_voice_chat_connection():
             await websocket.send(json.dumps(connect_msg))
             print("📤 Sent connection message")
 
-            # Wait for response
+            # Wait for session start response
             response = await websocket.recv()
             data = json.loads(response)
             print(f"📥 Received: {data['type']}")
@@ -63,10 +63,35 @@ async def test_voice_chat_connection():
                 await websocket.send(json.dumps(text_msg))
                 print("📤 Sent test text message")
 
-                # Wait for AI response
-                response = await websocket.recv()
-                data = json.loads(response)
-                print(f"📥 AI Response: {data}")
+                # Wait for AI response - give it more time to process
+                try:
+                    # Listen for multiple messages
+                    for i in range(10):  # Wait for up to 10 messages or 30 seconds
+                        response = await asyncio.wait_for(
+                            websocket.recv(), timeout=30.0
+                        )
+                        data = json.loads(response)
+                        print(f"📥 AI Response {i + 1}: {data['type']}")
+
+                        # Print the data for debugging
+                        if data.get("data"):
+                            if "text" in data["data"]:
+                                print(f"   📝 Text: {data['data']['text']}")
+                            if "audio" in data["data"]:
+                                print(
+                                    f"   🔊 Audio: {len(data['data']['audio'])} bytes (base64)"
+                                )
+
+                        # If we get a text response, we're done
+                        if data["type"] in ["text_response", "output_transcription"]:
+                            print("✅ Got AI response!")
+                            break
+
+                except asyncio.TimeoutError:
+                    print("⏰ Timeout waiting for AI response")
+
+                # Keep connection alive for a bit to test streaming
+                await asyncio.sleep(2)
 
                 print("✅ Voice chat test completed successfully!")
             else:
