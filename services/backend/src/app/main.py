@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="FastAPI service for document editing, text-to-speech, and text-to-video using Gemini AI",
+    description="FastAPI service for document editing, text-to-speech, text-to-video, and real-time AI chat using Gemini AI",
     version=settings.VERSION,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -48,7 +48,7 @@ async def root():
     return {
         "message": "Document Service API is running",
         "version": settings.VERSION,
-        "services": ["document", "text-to-speech", "text-to-video"],
+        "services": ["document", "text-to-speech", "text-to-video", "gemini-live"],
     }
 
 
