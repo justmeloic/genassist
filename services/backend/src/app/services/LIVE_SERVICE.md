@@ -1,4 +1,4 @@
-# Gemini Live API Service - Summary
+# Gemini Live API Service
 
 ## What was created:
 
