@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from src.app.api.v1.routes import (
+    auth,
     document_edit,
     gemini_live,
     text2image,
@@ -31,3 +32,5 @@ api_router.include_router(
 api_router.include_router(
     gemini_live.router, prefix="/gemini-live", tags=["gemini-live"]
 )
+
+api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])

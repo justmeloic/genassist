@@ -4,6 +4,7 @@ const TEXT_TO_SPEECH_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_SPEECH_ENDPOINT 
 const TEXT_TO_VIDEO_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_VIDEO_ENDPOINT || '/v1/api/text2video/';
 const TEXT_TO_IMAGE_ENDPOINT = process.env.NEXT_PUBLIC_TEXT_TO_IMAGE_ENDPOINT || '/v1/api/text2image/';
 const GEMINI_LIVE_ENDPOINT = process.env.NEXT_PUBLIC_GEMINI_LIVE_ENDPOINT || '/v1/api/gemini-live/';
+const AUTH_ENDPOINT = process.env.NEXT_PUBLIC_AUTH_ENDPOINT || '/v1/api/auth/';
 
 // WebSocket endpoints
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 'ws://localhost:8000';
@@ -347,3 +348,37 @@ export async function healthCheck(): Promise<{status: string, active_sessions: n
   
   return response.json();
 }
+
+// Authentication functions
+export const login = async (secret: string, name: string, geminiApiKey: string) => {
+  const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINT}login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ secret, name, gemini_api_key: geminiApiKey }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Login failed');
+  }
+
+  return response.json();
+};
+
+export const logout = async () => {
+  const response = await fetch(`${API_BASE_URL}${AUTH_ENDPOINT}logout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Logout failed');
+  }
+
+  return response.json();
+};

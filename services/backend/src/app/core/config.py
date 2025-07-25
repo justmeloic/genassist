@@ -25,9 +25,10 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    AUTH_SECRET: str
 
     # Gemini API
-    GEMINI_API_KEY: str
+    GEMINI_API_KEY: str = ""  # Optional - users provide at login
     GEMINI_MODEL_DOCUMENT: str = "gemini-2.0-flash"
     GEMINI_MODEL_TTS: str = "gemini-2.5-flash-preview-tts"
     GEMINI_MODEL_MULTI_TTS: str = "gemini-2.5-flash-preview-tts"
@@ -72,20 +73,16 @@ class Settings(BaseSettings):
     @classmethod
     def validate_gemini_api_key(cls, v: str) -> str:
         """
-        Ensures the GEMINI_API_KEY is provided.
+        Validates the GEMINI_API_KEY (now optional since users provide it at login).
 
         Args:
             v: The value of the GEMINI_API_KEY from the environment.
 
         Returns:
-            The validated API key.
-
-        Raises:
-            ValueError: If the GEMINI_API_KEY is empty or not set.
+            The API key (can be empty string).
         """
-        if not v:
-            raise ValueError("GEMINI_API_KEY must be set")
-        return v
+        # Allow empty string since users will provide API key at login
+        return v or ""
 
 
 settings = Settings()
