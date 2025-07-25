@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/justmeloic/genassist/compare/v0.1.1...v0.1.2) (2025-07-25)
+
+
+### Features
+
+* implement complete user authentication system with login page ([658f54d](https://github.com/justmeloic/genassist/commit/658f54df3fafe21653701eda26a7cd5f2b326c56))
+
 ### 0.1.1 (2025-07-25)
 
 
