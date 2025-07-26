@@ -41,3 +41,15 @@ pids
 audio_outputs/
 video_outputs/
 document_outputs/
+
+# Deployment
+latest-deployment/
+logs/
+*.deploy.log
+deploy_*.log
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/

@@ -48,4 +48,12 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Next.js cache
+.next/cache
+
+# Package manager lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 next-env.d.ts

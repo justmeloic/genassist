@@ -164,5 +164,15 @@ api_keys.txt
 *.key
 *.crt
 
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Deployment artifacts
+gunicorn.pid
+*.sock
+
 # Important: Keep test environment file (overrides *.test pattern)
 !.env.test
