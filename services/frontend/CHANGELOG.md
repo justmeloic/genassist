@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/justmeloic/genassist/compare/v0.1.3...v0.1.4) (2025-07-26)
+
+
+### Features
+
+* Complete deployment infrastructure overhaul with production support ([a1c8e00](https://github.com/justmeloic/genassist/commit/a1c8e00ecdd76ec66328676e71c8f9baddfe996e))
+
+
+### Bug Fixes
+
+* unignore Python models directory and add login.py ([84671c9](https://github.com/justmeloic/genassist/commit/84671c954de9aee5f01ed45b53109ef00b1f96bb))
+
 ### [0.1.3](https://github.com/justmeloic/genassist/compare/v0.1.2...v0.1.3) (2025-07-26)
 
 
