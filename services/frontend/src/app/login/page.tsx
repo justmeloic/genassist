@@ -172,12 +172,19 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-xs text-gray-500 dark:text-gray-500 max-w-xs mx-auto">
-              You need a valid Gemini API key to use this application.
+            <p className="text-xs text-gray-500 dark:text-gray-500 max-w-xs mx-auto mb-2">
+              This is a secure application. For access, please contact{" "}
+              <a 
+                href="mailto:loic.muhirwa@gmail.com" 
+                className="text-blue-600 dark:text-blue-600 hover:text-blue-800 dark:hover:text-blue-800 underline"
+              >
+                loic.muhirwa@gmail.com
+              </a>
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-500 max-w-xs mx-auto">
-              Get your API key from the Google AI Studio.
+              Additionally, you need a valid Gemini API key to use this application; get your API key from the Google AI Studio.
             </p>
+
           </div>
         </CardContent>
       </Card>
