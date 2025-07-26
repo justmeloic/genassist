@@ -42,7 +42,11 @@ class Settings(BaseSettings):
 
     # API Configuration
     API_V1_STR: str = "/v1/api"
-    ALLOWED_HOSTS: list = ["*"]
+    ALLOWED_HOSTS: list = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000", 
+        "https://*.ngrok-free.app",  # Handled by regex in main.py
+    ]
 
     # Audio Configuration
     AUDIO_SAMPLE_RATE: int = 24000

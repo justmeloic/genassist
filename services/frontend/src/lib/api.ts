@@ -9,6 +9,24 @@ const AUTH_ENDPOINT = process.env.NEXT_PUBLIC_AUTH_ENDPOINT || '/v1/api/auth/';
 // WebSocket endpoints
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_BASE_URL || 'ws://localhost:8000';
 
+// Helper function to get headers with ngrok compatibility
+function getApiHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
+  const baseHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...additionalHeaders,
+  };
+
+  // Add ngrok bypass header if using ngrok URL
+  if (typeof window !== 'undefined' && (
+    window.location.hostname.includes('.ngrok-free.app') ||
+    window.location.hostname.includes('.ngrok.io')
+  )) {
+    baseHeaders['ngrok-skip-browser-warning'] = 'true';
+  }
+
+  return baseHeaders;
+}
+
 interface DocumentEditRequest {
   content: string;
   instructions: string;
@@ -63,9 +81,7 @@ export interface TextToImageResponse {
 export async function editDocument(request: DocumentEditRequest): Promise<DocumentEditResponse> {
   const response = await fetch(`${API_BASE_URL}${DOCUMENT_EDIT_ENDPOINT}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: getApiHeaders(),
     body: JSON.stringify(request),
   });
 
@@ -110,7 +126,7 @@ export async function generateVideo(request: TextToVideoRequest): Promise<TextTo
     if (errorData?.detail) {
       throw new Error(errorData.detail);
     }
-    
+
     // As a fallback, use the HTTP status text.
     throw new Error(`Request failed with status: ${response.status} ${response.statusText}`);
   }
@@ -157,12 +173,12 @@ export function getVideoUrl(filePath: string | undefined): string {
   if (!filePath) {
     throw new Error('File path is required');
   }
-  
+
   const filename = filePath.split('/').pop();
   if (!filename) {
     throw new Error('Invalid file path');
   }
-  
+
   return `${API_BASE_URL}${TEXT_TO_VIDEO_ENDPOINT}download/${filename}`;
 }
 
@@ -181,13 +197,13 @@ export function getImageUrl(filePath: string | undefined): string {
 // Gemini Live WebSocket Types
 export enum ChatMode {
   VOICE = "voice",
-  SCREEN = "screen", 
+  SCREEN = "screen",
   CAMERA = "camera"
 }
 
 export enum VoiceName {
   PUCK = "Puck",
-  CHARON = "Charon", 
+  CHARON = "Charon",
   KORE = "Kore",
   FENRIR = "Fenrir",
   AOEDE = "Aoede"
@@ -198,23 +214,23 @@ export enum WebSocketMessageType {
   CONNECT = "connect",
   DISCONNECT = "disconnect",
   ERROR = "error",
-  
+
   // Audio messages
   AUDIO_DATA = "audio_data",
   AUDIO_CONFIG = "audio_config",
-  
+
   // Text messages
   TEXT_MESSAGE = "text_message",
   TEXT_RESPONSE = "text_response",
-  
+
   // Screen/Camera messages
   SCREEN_DATA = "screen_data",
   CAMERA_DATA = "camera_data",
-  
+
   // Transcription messages
   INPUT_TRANSCRIPTION = "input_transcription",
   OUTPUT_TRANSCRIPTION = "output_transcription",
-  
+
   // Session management
   SESSION_START = "session_start",
   SESSION_END = "session_end",
@@ -292,60 +308,60 @@ export interface SessionStatsResponse {
 
 // Gemini Live WebSocket Functions
 export function getWebSocketUrl(chatMode: ChatMode): string {
-  const endpoint = chatMode === ChatMode.VOICE ? 'voice-chat' : 
-                   chatMode === ChatMode.SCREEN ? 'screen-share' : 'camera-chat';
+  const endpoint = chatMode === ChatMode.VOICE ? 'voice-chat' :
+    chatMode === ChatMode.SCREEN ? 'screen-share' : 'camera-chat';
   return `${WS_BASE_URL}${GEMINI_LIVE_ENDPOINT}${endpoint}`;
 }
 
-export async function getAvailableVoices(): Promise<{voices: Array<{id: string, name: string, description: string}>}> {
+export async function getAvailableVoices(): Promise<{ voices: Array<{ id: string, name: string, description: string }> }> {
   const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}voices`);
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch available voices');
   }
-  
+
   return response.json();
 }
 
 export async function getSessionStats(): Promise<SessionStatsResponse> {
   const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}stats`);
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch session stats');
   }
-  
+
   return response.json();
 }
 
-export async function getActiveSessions(): Promise<{sessions: SessionInfo[], total_count: number}> {
+export async function getActiveSessions(): Promise<{ sessions: SessionInfo[], total_count: number }> {
   const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}sessions`);
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch active sessions');
   }
-  
+
   return response.json();
 }
 
-export async function terminateSession(sessionId: string): Promise<{message: string, session_id: string}> {
+export async function terminateSession(sessionId: string): Promise<{ message: string, session_id: string }> {
   const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}sessions/${sessionId}`, {
     method: 'DELETE',
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to terminate session');
   }
-  
+
   return response.json();
 }
 
-export async function healthCheck(): Promise<{status: string, active_sessions: number, total_sessions: number}> {
+export async function healthCheck(): Promise<{ status: string, active_sessions: number, total_sessions: number }> {
   const response = await fetch(`${API_BASE_URL}${GEMINI_LIVE_ENDPOINT}health`);
-  
+
   if (!response.ok) {
     throw new Error('Health check failed');
   }
-  
+
   return response.json();
 }
 
