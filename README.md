@@ -4,7 +4,7 @@
 ![Next.js](https://img.shields.io/badge/next.js-14.0.0+-success.svg)
 [![License](https://img.shields.io/badge/License-Apache_2.0-orange.svg)](https://opensource.org/licenses/Apache-2.0)
 
-**Author / Maintainer:** [Loïc Muhirwa](https://github.com/justmeloic)
+**Owner / Maintainer:** [Loïc Muhirwa](https://github.com/justmeloic)
 
 ## Services
 

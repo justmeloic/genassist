@@ -1,11 +1,16 @@
 #!/bin/bash
 
 # Deploy Genassist application (frontend + backend services)
-# This script sets up both frontend and backend in separate screen sessions
+# This script activates environments and starts both services in screen sessions
+# Prerequisites: 
+#   - Backend virtual environment should be set up at services/backend/.venv
+#   - Frontend dependencies should be installed in services/frontend
+#   - Both environments should be ready to run
+
+set -e  # Exit on any error
 
 # Configuration
-PROJECT_ROOT="/Users/$(whoami)/Desktop/projects/tooling/web/genassist"
-DEPLOY_DIR="$PROJECT_ROOT/latest-deployment"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_DIR="$PROJECT_ROOT/logs"
 LOG_FILE="$LOG_DIR/deploy_${TIMESTAMP}.log"
@@ -13,25 +18,11 @@ LOG_FILE="$LOG_DIR/deploy_${TIMESTAMP}.log"
 # Service Configuration
 FRONTEND_SCREEN="genassist-frontend"
 BACKEND_SCREEN="genassist-backend"
+NGROK_SCREEN="genassist-ngrok"
 FRONTEND_PORT=3000
 BACKEND_PORT=8000
-PYTHON_VERSION="3.13"
-NODE_VERSION="18"
-VENV_NAME=".venv"
-
-# Server Configuration
 FRONTEND_HOST=0.0.0.0
 BACKEND_HOST=0.0.0.0
-
-# Profile Configurations
-export PATH="$PATH:$HOME/.local/bin:$HOME/.nvm/versions/node/v${NODE_VERSION}/bin"
-
-# Handy aliases
-alias gs='git status'
-alias dev-frontend='cd services/frontend && npm run dev'
-alias dev-backend='cd services/backend && uvicorn src.app.main:app --reload --host 0.0.0.0 --port $BACKEND_PORT'
-alias serve-frontend='cd services/frontend && npm run build && npm run start'
-alias serve-backend='cd services/backend && gunicorn src.app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$BACKEND_PORT --timeout 600'
 
 # Create logs directory if it doesn't exist
 mkdir -p "$LOG_DIR"
@@ -41,314 +32,250 @@ log() {
     echo "$1" | tee -a "$LOG_FILE"
 }
 
-log "🚀 Starting Genassist deployment process at $(date)..."
+# Function to check if a port is in use
+check_port() {
+    local port=$1
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null ; then
+        return 0  # Port is in use
+    else
+        return 1  # Port is free
+    fi
+}
 
-# Create deployment directory
-log "📁 Creating deployment directory: $DEPLOY_DIR"
-mkdir -p "$DEPLOY_DIR"
+# Function to stop existing screen sessions
+stop_services() {
+    log "🛑 Stopping existing services..."
+    
+    if screen -list | grep -q "$BACKEND_SCREEN"; then
+        log "   Stopping backend screen session: $BACKEND_SCREEN"
+        screen -S "$BACKEND_SCREEN" -X quit 2>/dev/null || true
+    fi
+    
+    if screen -list | grep -q "$FRONTEND_SCREEN"; then
+        log "   Stopping frontend screen session: $FRONTEND_SCREEN"
+        screen -S "$FRONTEND_SCREEN" -X quit 2>/dev/null || true
+    fi
+    
+    if screen -list | grep -q "$NGROK_SCREEN"; then
+        log "   Stopping ngrok screen session: $NGROK_SCREEN"
+        screen -S "$NGROK_SCREEN" -X quit 2>/dev/null || true
+    fi
+    
+    # Wait a moment for processes to terminate
+    sleep 2
+}
 
-# Check if we're in the right directory or need to copy files
-if [ -d "services/frontend" ] && [ -d "services/backend" ]; then
-    log "✅ Found services directories in current location"
-    WORK_DIR="$(pwd)"
-else
-    log "📂 Copying project files to deployment directory..."
-    cp -r . "$DEPLOY_DIR/"
-    cd "$DEPLOY_DIR"
-    WORK_DIR="$DEPLOY_DIR"
-fi
+log "🚀 Starting Genassist deployment at $(date)..."
+log "📁 Project root: $PROJECT_ROOT"
 
-log "📍 Working directory: $WORK_DIR"
+# Prerequisite checks
+log "🔍 Checking prerequisites..."
 
-# Install system dependencies
-log "🔧 Updating package list..."
-if ! sudo apt-get update -y >> "$LOG_FILE" 2>&1; then
-    log "❌ Error: Failed to update package list."
-    log "🔄 Continuing with deployment anyway..."
-fi
-
-log "🔧 Installing required packages (curl, python3.13, python3.13-venv, build-essential)..."
-if ! sudo apt-get install -y curl python3.13 python3.13-venv build-essential >> "$LOG_FILE" 2>&1; then
-    log "❌ Error: Failed to install system dependencies."
-    log "🔄 Continuing with deployment anyway..."
-fi
-log "✅ System dependencies checked/installed."
-
-# Install Node.js using NodeSource repository
-log "🟢 Installing Node.js ${NODE_VERSION}..."
-if ! command -v node &> /dev/null || [[ "$(node --version)" != *"v${NODE_VERSION}"* ]]; then
-    log "📦 Setting up NodeSource repository..."
-    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash - >> "$LOG_FILE" 2>&1
-    sudo apt-get install -y nodejs >> "$LOG_FILE" 2>&1
-    log "✅ Node.js installed: $(node --version)"
-    log "✅ npm installed: $(npm --version)"
-else
-    log "✅ Node.js already installed: $(node --version)"
-fi
-
-# Check Python installation
-log "🐍 Checking Python installation..."
-if command -v python3.13 &> /dev/null; then
-    PYTHON_CMD="python3.13"
-    log "✅ Python 3.13 found: $(python3.13 --version)"
-elif command -v python3 &> /dev/null; then
-    PYTHON_CMD="python3"
-    log "✅ Python3 found: $(python3 --version)"
-else
-    log "❌ Error: Python not found. Please install Python first."
+# Check if we're in the right directory
+if [ ! -d "services/frontend" ] || [ ! -d "services/backend" ]; then
+    log "❌ Error: services/frontend or services/backend directories not found!"
+    log "💡 Please run this script from the project root directory."
     exit 1
 fi
 
-# Kill existing screen sessions
-log "🔍 Checking for existing screen sessions..."
-for screen_name in "$FRONTEND_SCREEN" "$BACKEND_SCREEN"; do
-    if screen -list | grep -q "$screen_name"; then
-        log "🛑 Killing existing screen session: $screen_name"
-        screen -S "$screen_name" -X quit 2>>"$LOG_FILE" || true
-        sleep 2
+# Check if backend virtual environment exists
+if [ ! -d "services/backend/.venv" ]; then
+    log "❌ Error: Backend virtual environment not found at services/backend/.venv"
+    log "💡 Please set up the backend environment first:"
+    log "   cd services/backend && python3 -m venv .venv && source .venv/bin/activate && pip install -e ."
+    exit 1
+fi
+
+# Check if frontend dependencies are installed
+if [ ! -d "services/frontend/node_modules" ]; then
+    log "❌ Error: Frontend dependencies not found at services/frontend/node_modules"
+    log "💡 Please install frontend dependencies first:"
+    log "   cd services/frontend && npm install"
+    exit 1
+fi
+
+# Check if frontend is built for production
+if [ ! -d "services/frontend/.next" ]; then
+    log "❌ Error: Frontend build not found. Building now..."
+    cd "$PROJECT_ROOT/services/frontend"
+    log "🔨 Building frontend for production..."
+    npm run build
+    if [ $? -ne 0 ]; then
+        log "❌ Frontend build failed!"
+        exit 1
+    fi
+    log "✅ Frontend built successfully"
+    cd "$PROJECT_ROOT"
+fi
+
+# Check if required commands exist
+for cmd in screen node python3; do
+    if ! command -v $cmd &> /dev/null; then
+        log "❌ Error: Required command '$cmd' not found"
+        log "💡 Please install $cmd first"
+        exit 1
     fi
 done
 
-# Kill processes using our ports
-for port in "$FRONTEND_PORT" "$BACKEND_PORT"; do
-    log "🔍 Checking for processes using port $port..."
-    PORT_PROCESS=$(lsof -ti:$port 2>/dev/null || true)
-    if [ -n "$PORT_PROCESS" ]; then
-        log "🛑 Found process using port $port (PID: $PORT_PROCESS), killing it..."
-        kill -9 $PORT_PROCESS 2>/dev/null || true
-        sleep 2
-        log "✅ Port $port cleared"
+# Check if ngrok is available (optional)
+NGROK_AVAILABLE=false
+if command -v ngrok &> /dev/null; then
+    # Check if authtoken is configured (either via config file or environment)
+    if [ -n "$NGROK_AUTH_TOKEN" ] || [ -f ~/.config/ngrok/ngrok.yml ]; then
+        NGROK_AVAILABLE=true
+        log "✅ Ngrok found and configured - will create public tunnel"
     else
-        log "✅ Port $port is available"
+        log "⚠️  Ngrok found but not configured - skipping public tunnel"
+        log "💡 Set NGROK_AUTH_TOKEN environment variable or run: ngrok config add-authtoken YOUR_TOKEN"
     fi
-done
+else
+    log "⚠️  Ngrok not found - skipping public tunnel"
+fi
 
-# Kill any existing node or uvicorn processes
-log "🔍 Checking for any running node/uvicorn processes..."
-if pgrep -f "node.*next" > /dev/null 2>&1; then
-    log "🛑 Found running Next.js processes, killing them..."
-    pkill -f "node.*next" 2>/dev/null || true
+log "✅ All prerequisites met"
+
+# Check port availability
+log "🔍 Checking port availability..."
+if check_port $FRONTEND_PORT; then
+    log "⚠️  Port $FRONTEND_PORT is in use, stopping existing process..."
+    lsof -ti:$FRONTEND_PORT | xargs kill -9 2>/dev/null || true
     sleep 2
 fi
-if pgrep -f "uvicorn" > /dev/null 2>&1; then
-    log "🛑 Found running uvicorn processes, killing them..."
-    pkill -f "uvicorn" 2>/dev/null || true
+
+if check_port $BACKEND_PORT; then
+    log "⚠️  Port $BACKEND_PORT is in use, stopping existing process..."
+    lsof -ti:$BACKEND_PORT | xargs kill -9 2>/dev/null || true
     sleep 2
 fi
 
-# ================================
-# BACKEND DEPLOYMENT
-# ================================
-log "🔧 Setting up Backend Service..."
-cd "$WORK_DIR/services/backend"
+# Stop any existing screen sessions
+stop_services
 
-# Create virtual environment for backend
-log "🐍 Creating Python virtual environment for backend..."
-if $PYTHON_CMD -m venv "$VENV_NAME" 2>>"$LOG_FILE"; then
-    log "✅ Backend virtual environment created successfully"
-else
-    log "❌ Error: Failed to create backend virtual environment"
-    exit 1
-fi
-
-# Install backend dependencies
-log "📦 Installing backend dependencies..."
-if [ -f "$VENV_NAME/bin/activate" ]; then
-    source "$VENV_NAME/bin/activate"
-    log "✅ Backend virtual environment activated"
-    
-    # Upgrade pip
-    log "⬆️  Upgrading pip..."
-    pip install --upgrade pip >> "$LOG_FILE" 2>&1
-    
-    # Install dependencies
-    if [ -f "requirements.txt" ]; then
-        log "📋 Installing from requirements.txt..."
-        pip install -r requirements.txt >> "$LOG_FILE" 2>&1
-        log "✅ Backend dependencies installed from requirements.txt"
-    else
-        log "❌ Error: requirements.txt not found in backend directory"
-        exit 1
-    fi
-    
-    # Install project if pyproject.toml exists
-    if [ -f "pyproject.toml" ]; then
-        log "📋 Installing backend project..."
-        pip install -e . >> "$LOG_FILE" 2>&1
-        log "✅ Backend project installed"
-    fi
-else
-    log "❌ Error: Backend virtual environment activation failed"
-    exit 1
-fi
-
-# ================================
-# FRONTEND DEPLOYMENT
-# ================================
-log "🔧 Setting up Frontend Service..."
-cd "$WORK_DIR/services/frontend"
-
-# Install frontend dependencies
-log "📦 Installing frontend dependencies..."
-if [ -f "package.json" ]; then
-    log "📋 Running npm install..."
-    if npm install >> "$LOG_FILE" 2>&1; then
-        log "✅ Frontend dependencies installed"
-    else
-        log "❌ Error: Failed to install frontend dependencies"
-        exit 1
-    fi
-else
-    log "❌ Error: package.json not found in frontend directory"
-    exit 1
-fi
-
-# Build frontend
-log "🏗️  Building frontend..."
-if npm run build >> "$LOG_FILE" 2>&1; then
-    log "✅ Frontend build completed successfully"
-else
-    log "❌ Error: Frontend build failed"
-    exit 1
-fi
-
-# ================================
-# START SERVICES IN SCREEN SESSIONS
-# ================================
+log "🚀 Starting services..."
 
 # Start Backend Service
-log "🖥️  Creating backend screen session: $BACKEND_SCREEN"
-cd "$WORK_DIR/services/backend"
+log "🔧 Starting backend service..."
+cd "$PROJECT_ROOT/services/backend"
+
+if [ ! -f ".venv/bin/activate" ]; then
+    log "❌ Error: Backend virtual environment not found at .venv/bin/activate"
+    exit 1
+fi
+
+# Backend server commands
+UVICORN_CMD="uvicorn src.app.main:app --reload --host $BACKEND_HOST --port $BACKEND_PORT"
 GUNICORN_CMD="gunicorn src.app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind $BACKEND_HOST:$BACKEND_PORT --timeout 600"
 
+# Use Gunicorn by default (set USE_UVICORN=1 to use Uvicorn instead)
+if [ "$USE_UVICORN" = "1" ]; then
+    BACKEND_CMD="$UVICORN_CMD"
+    SERVER_TYPE="Uvicorn (development)"
+else
+    BACKEND_CMD="$GUNICORN_CMD"
+    SERVER_TYPE="Gunicorn (production)"
+fi
+
 screen -dmS "$BACKEND_SCREEN" bash -c "
-    cd '$WORK_DIR/services/backend'
-    source '$VENV_NAME/bin/activate' 2>/dev/null || true
-    echo '🚀 Starting Backend Server in screen session...'
-    echo '📍 Working directory: \$(pwd)'
-    echo '🐍 Python: \$(which python)'
-    echo '⚡ Command: $GUNICORN_CMD'
-    echo '🌐 Backend will be available at: http://$BACKEND_HOST:$BACKEND_PORT'
-    echo '📺 Screen session: $BACKEND_SCREEN'
-    echo ''
-    $GUNICORN_CMD
-    echo '🛑 Backend server stopped'
-    read -p 'Press Enter to exit screen session...'
+    cd '$PROJECT_ROOT/services/backend'
+    source .venv/bin/activate
+    echo '🚀 Starting Backend Server with $SERVER_TYPE...'
+    echo '🌐 Backend available at: http://$BACKEND_HOST:$BACKEND_PORT'
+    echo '📚 API docs at: http://$BACKEND_HOST:$BACKEND_PORT/docs'
+    $BACKEND_CMD
 "
 
-# Wait for backend to start
-sleep 3
+log "✅ Backend started in screen session: $BACKEND_SCREEN"
 
-# Start Frontend Service
-log "🖥️  Creating frontend screen session: $FRONTEND_SCREEN"
-cd "$WORK_DIR/services/frontend"
-FRONTEND_CMD="npm run start -- --hostname $FRONTEND_HOST --port $FRONTEND_PORT"
+# Start Frontend Service  
+log "🔧 Starting frontend service..."
+cd "$PROJECT_ROOT/services/frontend"
+
+if [ ! -d "node_modules" ]; then
+    log "❌ Error: Frontend node_modules not found. Run 'npm install' first."
+    exit 1
+fi
 
 screen -dmS "$FRONTEND_SCREEN" bash -c "
-    cd '$WORK_DIR/services/frontend'
-    echo '🚀 Starting Frontend Server in screen session...'
-    echo '📍 Working directory: \$(pwd)'
-    echo '🟢 Node: \$(which node)'
-    echo '⚡ Command: $FRONTEND_CMD'
-    echo '🌐 Frontend will be available at: http://$FRONTEND_HOST:$FRONTEND_PORT'
-    echo '📺 Screen session: $FRONTEND_SCREEN'
-    echo ''
-    $FRONTEND_CMD
-    echo '🛑 Frontend server stopped'
-    read -p 'Press Enter to exit screen session...'
+    cd '$PROJECT_ROOT/services/frontend'
+    echo '🚀 Starting Frontend Server...'
+    echo '🌐 Frontend available at: http://$FRONTEND_HOST:$FRONTEND_PORT'
+    npm run start -- --hostname $FRONTEND_HOST --port $FRONTEND_PORT
 "
 
-# Wait for services to start
-sleep 5
+log "✅ Frontend started in screen session: $FRONTEND_SCREEN"
 
-# Check if screen sessions are running
-BACKEND_RUNNING=false
-FRONTEND_RUNNING=false
+# Start Ngrok Service (expose frontend to internet) - only if available and configured
+if [ "$NGROK_AVAILABLE" = true ]; then
+    log "🌐 Starting ngrok tunnel..."
+    screen -dmS "$NGROK_SCREEN" bash -c "
+        # Use environment variable if available, otherwise rely on config file
+        if [ -n '$NGROK_AUTH_TOKEN' ]; then
+            export NGROK_AUTHTOKEN='$NGROK_AUTH_TOKEN'
+        fi
+        echo '🚀 Starting Ngrok tunnel for frontend...'
+        echo '🌍 Exposing http://localhost:$FRONTEND_PORT to the internet'
+        ngrok http $FRONTEND_PORT
+    "
+    log "✅ Ngrok tunnel started in screen session: $NGROK_SCREEN"
+else
+    log "⚠️  Skipping ngrok tunnel (not available or not configured)"
+fi
+
+# Wait for services to start
+sleep 3
+
+# Verify services are running
+log "🔍 Verifying services..."
 
 if screen -list | grep -q "$BACKEND_SCREEN"; then
-    log "✅ Backend screen session '$BACKEND_SCREEN' created and running"
-    BACKEND_RUNNING=true
+    log "✅ Backend screen session running"
 else
-    log "❌ Error: Failed to create backend screen session"
+    log "❌ Backend screen session failed to start"
 fi
 
 if screen -list | grep -q "$FRONTEND_SCREEN"; then
-    log "✅ Frontend screen session '$FRONTEND_SCREEN' created and running"
-    FRONTEND_RUNNING=true
+    log "✅ Frontend screen session running"
 else
-    log "❌ Error: Failed to create frontend screen session"
+    log "❌ Frontend screen session failed to start"
 fi
 
-# Test if services are responding
-log "🔍 Testing service availability..."
-sleep 10  # Give services time to fully start
-
-# Test backend
-if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$BACKEND_PORT/" | grep -q "200\|404"; then
-    log "✅ Backend service is responding on port $BACKEND_PORT"
-else
-    log "⚠️  Backend service may not be fully ready yet (this is normal)"
+if [ "$NGROK_AVAILABLE" = true ]; then
+    if screen -list | grep -q "$NGROK_SCREEN"; then
+        log "✅ Ngrok tunnel running"
+    else
+        log "❌ Ngrok tunnel failed to start (check authtoken)"
+    fi
 fi
 
-# Test frontend
-if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$FRONTEND_PORT/" | grep -q "200\|404"; then
-    log "✅ Frontend service is responding on port $FRONTEND_PORT"
-else
-    log "⚠️  Frontend service may not be fully ready yet (this is normal)"
+log ""
+log "🎯 Deployment completed!"
+log ""
+log "📺 Screen Sessions:"
+log "   Backend:  screen -r $BACKEND_SCREEN"
+log "   Frontend: screen -r $FRONTEND_SCREEN"
+if [ "$NGROK_AVAILABLE" = true ]; then
+    log "   Ngrok:    screen -r $NGROK_SCREEN"
 fi
-
-# Back to project root
-cd "$WORK_DIR"
-
-# Display deployment summary
-log "📊 Deployment Summary:"
-log "   📁 Deploy directory: $WORK_DIR"
-log "   🐍 Python command: $PYTHON_CMD"
-log "   🟢 Node version: $(node --version)"
-log "   📺 Backend screen: $BACKEND_SCREEN"
-log "   📺 Frontend screen: $FRONTEND_SCREEN"
-log "   🌐 Backend URL: http://$BACKEND_HOST:$BACKEND_PORT"
-log "   🌐 Frontend URL: http://$FRONTEND_HOST:$FRONTEND_PORT"
-log "   📋 Log file: $LOG_FILE"
-
-log "🎉 Genassist deployment process completed at $(date)!"
+log "   List all: screen -list"
 log ""
-log "📺 Screen Session Commands:"
-log "   📌 Attach to backend:     screen -r $BACKEND_SCREEN"
-log "   📌 Attach to frontend:    screen -r $FRONTEND_SCREEN"
-log "   📌 List all sessions:     screen -list"
-log "   📌 Kill backend:          screen -S $BACKEND_SCREEN -X quit"
-log "   📌 Kill frontend:         screen -S $FRONTEND_SCREEN -X quit"
-log "   📌 Kill all services:     screen -S $BACKEND_SCREEN -X quit && screen -S $FRONTEND_SCREEN -X quit"
-log ""
-log "🖥️  Commands while inside screen session:"
-log "   🔌 Detach from screen:    Ctrl+A, then D"
-log "   📌 Show help:             Ctrl+A, then ?"
-log "   📌 Kill current session:  Ctrl+A, then k"
-log "   📌 Create new window:     Ctrl+A, then c"
-log "   📌 Next window:           Ctrl+A, then n"
-log "   📌 Previous window:       Ctrl+A, then p"
-log ""
-log "🌐 Access your application:"
-log "   🎨 Frontend (UI):         http://localhost:$FRONTEND_PORT"
-log "   🔧 Backend (API):         http://localhost:$BACKEND_PORT"
-log "   📚 API Documentation:     http://localhost:$BACKEND_PORT/docs"
-log ""
-log "🔧 Troubleshooting:"
-log "   📊 Check logs:            tail -f $LOG_FILE"
-log "   🔍 Check processes:       ps aux | grep -E '(uvicorn|gunicorn|node)'"
-log "   🌐 Check ports:           netstat -tlnp | grep -E '($FRONTEND_PORT|$BACKEND_PORT)'"
-log "   📺 List screens:          screen -list"
-
-if [ "$BACKEND_RUNNING" = true ] && [ "$FRONTEND_RUNNING" = true ]; then
-    log ""
-    log "🎊 SUCCESS: Both services are running!"
-    log "   🎯 Visit http://localhost:$FRONTEND_PORT to use your application"
-    exit 0
-else
-    log ""
-    log "⚠️  WARNING: Some services may not have started correctly"
-    log "   📋 Check the log file for details: $LOG_FILE"
-    log "   📺 Check screen sessions: screen -list"
-    exit 1
+log "🌐 Access URLs:"
+log "   Frontend: http://localhost:$FRONTEND_PORT"
+log "   Backend:  http://localhost:$BACKEND_PORT"
+log "   API Docs: http://localhost:$BACKEND_PORT/docs"
+if [ "$NGROK_AVAILABLE" = true ]; then
+    log "   Public:   Check ngrok session for public URL"
 fi
+log ""
+log "🔧 Server Configuration:"
+if [ "$USE_UVICORN" = "1" ]; then
+    log "   Backend: Uvicorn (development mode with auto-reload)"
+else
+    log "   Backend: Gunicorn (production mode with 4 workers)"
+fi
+log ""
+log "💡 To switch to Uvicorn (development): USE_UVICORN=1 ./scripts/deploy.sh"
+log ""
+log "🛑 To stop services:"
+log "   screen -S $BACKEND_SCREEN -X quit"
+log "   screen -S $FRONTEND_SCREEN -X quit"
+log "   screen -S $NGROK_SCREEN -X quit"
