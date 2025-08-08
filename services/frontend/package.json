@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "release": "standard-version",
-    "release:major": "standard-version --release-as major",
-    "release:minor": "standard-version --release-as minor",
-    "release:patch": "standard-version --release-as patch"
+    "release": "standard-version && mv CHANGELOG.md ../../CHANGELOG.md",
+    "release:major": "standard-version --release-as major && mv CHANGELOG.md ../../CHANGELOG.md",
+    "release:minor": "standard-version --release-as minor && mv CHANGELOG.md ../../CHANGELOG.md",
+    "release:patch": "standard-version --release-as patch && mv CHANGELOG.md ../../CHANGELOG.md"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
