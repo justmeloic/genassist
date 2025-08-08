@@ -10,19 +10,19 @@ Web interface for genassist.
 
 ### 3D Model Generation
 
-![3D Model Generation](../../docs/3d-model-gen.gif)
+<img src="../../docs/3d-model-gen.gif" alt="3D Model Generation" style="border-radius: 10px; max-width: 100%;">
 
 ### Documentation Generation
 
-![Documentation Generation](../../docs/doc-gen.gif)
+<img src="../../docs/doc-gen.gif" alt="Documentation Generation" style="border-radius: 10px; max-width: 100%;">
 
 ### Image Generation
 
-![Image Generation](../../docs/image-gen.gif)
+<img src="../../docs/image-gen.gif" alt="Image Generation" style="border-radius: 10px; max-width: 100%;">
 
 ### React Client Interface
 
-![React Client Interface](../../docs/react-client.gif)
+<img src="../../docs/react-client.gif" alt="React Client Interface" style="border-radius: 10px; max-width: 100%;">
 
 ## Development Setup
 
