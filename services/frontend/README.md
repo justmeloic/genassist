@@ -6,6 +6,24 @@
 
 Web interface for genassist.
 
+## Features
+
+### 3D Model Generation
+
+![3D Model Generation](../../docs/3d-model-gen.gif)
+
+### Documentation Generation
+
+![Documentation Generation](../../docs/doc-gen.gif)
+
+### Image Generation
+
+![Image Generation](../../docs/image-gen.gif)
+
+### React Client Interface
+
+![React Client Interface](../../docs/react-client.gif)
+
 ## Development Setup
 
 ### Prerequisites

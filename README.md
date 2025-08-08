@@ -6,6 +6,24 @@
 
 **Owner / Maintainer:** [Loïc Muhirwa](https://github.com/justmeloic)
 
+## Features
+
+### 3D Model Generation
+
+![3D Model Generation](docs/3d-model-gen.gif)
+
+### Documentation Generation
+
+![Documentation Generation](docs/doc-gen.gif)
+
+### Image Generation
+
+![Image Generation](docs/image-gen.gif)
+
+### React Client Interface
+
+![React Client](docs/react-client.gif)
+
 ## Services
 
 Each service has its own README with specific setup instructions. Please refer to:
